@@ -1,7 +1,7 @@
 ---
 title: "Corpus Linguistics with R: An Introduction"
 author: "Alvin Cheng-Hsien Chen"
-date: "Jan. @ TU, Dresden </br> 👉 <a href='https://mybinder.org/v2/gh/alvinntnu/collostruction_tutorial/main?urlpath=rstudio' target='_blank' style='font-weight:bold;'>Launch Tutorial in Binder</a>" 
+date: "Jan. @ TU, Dresden </br> 👉 <a href='https://mybinder.org/v2/gh/alvinntnu/Corpus_Linguistics_TU_Dresden/main?urlpath=rstudio' target='_blank' style='font-weight:bold;'>Launch Tutorial in Binder</a>" 
 output:
   prettydoc::html_pretty:
     theme: leonids
@@ -27,6 +27,13 @@ showtext_auto(enable = TRUE)
 
 ## rmarkdown::render("Corpus_Ling_Intro_ENC2036.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
 ```
+
+<p align="center">
+  👉 <a href="https://mybinder.org/v2/gh/alvinntnu/Corpus_Linguistics_TU_Dresden/main?urlpath=rstudio" target="_blank" style="font-weight:bold;">
+  Launch Tutorial in Binder
+  </a>
+</p>
+
 
 
 ## Corpus Analysis: A Start {#corpus-analysis-a-start}

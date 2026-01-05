@@ -1,7 +1,7 @@
 ---
 title: "A Practical Introduction to Collostructional Analysis in R"
 author: "Alvin Cheng-Hsien Chen"
-date: "Jan. @ TU, Dresden </br> 👉 <a href='https://mybinder.org/v2/gh/alvinntnu/collostruction_tutorial/main?urlpath=rstudio' target='_blank' style='font-weight:bold;'>Launch Tutorial in Binder</a>" 
+date: "Jan. @ TU, Dresden </br> 👉 <a href='https://mybinder.org/v2/gh/alvinntnu/Corpus_Linguistics_TU_Dresden/main?urlpath=rstudio' target='_blank' style='font-weight:bold;'>Launch Tutorial in Binder</a>" 
 output:
   prettydoc::html_pretty:
     theme: leonids
@@ -24,12 +24,12 @@ knitr::opts_chunk$set(fig.width=8, fig.height=6, dpi=300, fig.retina=2, cols.pri
 ## If loading showtext throws errors, install: https://www.xquartz.org/
 library(showtext)
 showtext_auto(enable = TRUE)
-
+library(prettydoc)
 ## rmarkdown::render("collostruction_analysis.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
 ```
 
 <p align="center">
-  👉 <a href="https://mybinder.org/v2/gh/alvinntnu/collostruction_tutorial/main?urlpath=rstudio" target="_blank" style="font-weight:bold;">
+  👉 <a href="https://mybinder.org/v2/gh/alvinntnu/Corpus_Linguistics_TU_Dresden/main?urlpath=rstudio" target="_blank" style="font-weight:bold;">
   Launch Tutorial in Binder
   </a>
 </p>
