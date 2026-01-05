@@ -1,0 +1,8 @@
+install.packages("showtext")
+install.packages("tidyverse")
+install.packages("tidytext")
+install.packages("readtext")
+install.packages("quanteda")
+install.packages("jiebaR")
+install.packages("rmarkdown")
+install.packages("prettydoc")

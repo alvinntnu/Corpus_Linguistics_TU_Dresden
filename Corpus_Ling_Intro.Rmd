@@ -1,0 +1,376 @@
+---
+title: "Corpus Linguistics with R: An Introduction"
+author: "Alvin Cheng-Hsien Chen"
+date: "Jan. @ TU, Dresden </br> 👉 <a href='https://mybinder.org/v2/gh/alvinntnu/collostruction_tutorial/main?urlpath=rstudio' target='_blank' style='font-weight:bold;'>Launch Tutorial in Binder</a>" 
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+    toc: true
+    number_sections: true
+    df_print: paged
+    css: "static/style.css"
+output_dir: "docs"
+bibliography: "static/book.bib"
+csl: "static/apa-6th-edition.csl"
+---
+
+# Corpus Analysis: A Start {#corpus-analysis-a-start}
+
+```{r include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+This chapter introduces corpus linguistics through hands-on analysis in R. The focus stays on concrete workflows that begin once text data has been collected. Each section shows how researchers transform raw texts into structured representations, then extract linguistic patterns through standard corpus methods. The examples rely on widely used R packages so that the analytical steps remain transparent and reproducible.
+
+## Installing `quanteda`
+
+R offers a rich ecosystem for computational text analysis. A comprehensive overview appears in the CRAN Task View on Natural Language Processing. This tutorial centers on the quanteda package, which provides efficient data structures for corpus management and a broad range of analytical tools. The official documentation at quanteda.io gives extensive technical detail.
+
+Since quanteda does not ship with base R, installation is required.
+
+
+```{r eval=F}
+install.packages("quanteda")
+install.packages("readtext")
+```
+
+Because quanteda compiles C++ and Fortran code, the system must include suitable compilers. Windows users should install Rtools from CRAN. macOS users should install the macOS command line tools. Installation issues usually trace back to missing compilers, so the package documentation serves as the best troubleshooting resource.
+
+
+```{r}
+library(tidyverse)
+library(quanteda)
+library(readtext)
+library(tidytext)
+
+packageVersion("quanteda")
+```
+
+
+## Building a Corpus from Text Data
+
+To illustrate a typical workflow, this chapter uses `data_corpus_inaugural`, a corpus distributed with `quanteda`. The dataset contains United States presidential inaugural addresses together with document-level metadata from 1789 onward.
+
+```{r}
+data_corpus_inaugural
+class(data_corpus_inaugural)
+```
+
+The `corpus()` function creates a corpus object from the data.
+
+
+```{r}
+corp_us <- corpus(data_corpus_inaugural)
+```
+
+Once loaded, `summary()` provides an overview of each document. The output reports metadata together with token and type counts, which offers a quick sense of text length variation across addresses.
+
+
+```{r}
+summary(corp_us)
+```
+
+
+Document-level metadata play a central role in corpus analysis. In `quanteda`, such information appears as document variables, called `docvars`. These variables allow systematic subsetting of the corpus.
+
+
+```{r}
+docvars(corp_us, "country") <- "US"
+
+corpus_subset(corp_us, Year > 2000) %>%
+summary()
+```
+
+
+Temporal trends often reveal interesting patterns. The following plot shows how address length changes across time.
+
+
+```{r}
+library(ggplot2)
+
+corp_us %>%
+summary() %>%
+ggplot(aes(x = Year, y = Tokens, group = 1)) +
+geom_line() +
+geom_point() +
+theme_bw()
+```
+
+
+Reproduce the line plot above. Add the president’s name as a label for each data point.
+
+Hint: consult ggplot2::geom_text() or ggrepel::geom_text_repel().
+
+
+```{r}
+library(ggrepel)
+
+corp_us %>%
+summary() %>%
+ggplot(aes(x = Year, y = Tokens, group = 1, label = President)) +
+geom_line(color = "darkgrey") +
+geom_point(aes(color = President)) +
+geom_text_repel(size = 2) +
+theme_bw() +
+scale_color_discrete(guide = "none")
+```
+
+Any text data that can be loaded into a character vector can be converted into a `quanteda` corpus. The `readtext` package simplifies data import from external files. For example, texts stored in a compressed archive can be read directly.
+
+```{r}
+gutenberg <- readtext("demo_data/gutenberg.zip")
+gutenberg_corp <- corpus(gutenberg)
+summary(gutenberg_corp)
+```
+
+
+## Keyword-in-Context
+
+Keyword-in-Context analysis, often called concordancing, forms a core method in corpus linguistics. The approach examines how a word appears in its surrounding context, which sheds light on usage patterns and meaning.
+
+Tokenization precedes concordance analysis.
+
+
+```{r}
+corp_us_tokens <- tokens(corp_us)
+kwic(corp_us_tokens, "terror")
+```
+
+The result appears as a data frame, which can be exported for further inspection. Although kwic() can tokenize internally, explicit tokenization clarifies the analytical steps.
+
+Regular expressions support more flexible searches. The following query retrieves all word forms that begin with terror.
+
+
+```{r}
+kwic(corp_us_tokens, "terror.*", valuetype = "regex") %>%
+data.frame()
+```
+
+Multiword expressions can also be searched with phrase().
+
+```{r}
+kwic(corp_us_tokens, phrase("our country")) %>%
+data.frame()
+```
+
+The output includes document identifiers, which allows direct reference back to the original discourse context.
+
+##Tidy Text Representation
+
+quanteda provides specialized corpus objects, yet many R workflows rely on tidy data principles. Tidy data structures present each variable as a column and each observation as a row, which simplifies manipulation with standard tools.
+
+For text analysis, tidy text format usually means one token per row. Tokens may represent words, n-grams, sentences, or larger units. The tidytext package bridges corpus objects and tidy data frames.
+
+```{r}
+corp_us_tidy <- tidy(corp_us)
+class(corp_us_tidy)
+```
+
+
+```{r}
+library(stringr)
+corp_us_tidy %>%
+mutate(text = str_sub(text, 1, 100) %>% str_c("..."))
+```
+
+
+## Word Frequency
+
+Word frequency lists provide a first overview of corpus content. Tokenization into words converts the text-based data frame into a token-based one.
+
+```{r}
+corp_us_words <- corp_us_tidy %>%
+unnest_tokens(
+output = word,
+input = text,
+token = "words"
+)
+
+corp_us_words
+```
+
+
+Default settings lower-case the text and remove punctuation. These design choices affect frequency counts, so analysts should always verify whether they suit the research question.
+
+
+```{r}
+corp_us_words_freq <- corp_us_words %>%
+count(word, sort = TRUE)
+
+corp_us_words_freq
+```
+
+
+## N-grams
+
+The same logic applies to multiword sequences. Bigram extraction illustrates the process.
+
+```{r}
+corp_us_bigrams <- corp_us_tidy %>%
+unnest_tokens(
+output = bigram,
+input = text,
+token = "ngrams",
+n = 2
+)
+
+corp_us_bigrams_freq <- corp_us_bigrams %>%
+count(bigram, sort = TRUE)
+
+corp_us_bigrams_freq
+```
+
+
+Unigram counts exceed bigram counts because each text contains fewer adjacent word pairs than individual words. This difference follows directly from how n-grams are defined.
+
+## Dispersion
+
+Frequency alone does not determine linguistic relevance. Dispersion captures how widely a form occurs across documents. An expression used by many presidents differs qualitatively from one concentrated in a single address.
+
+Here dispersion refers to the number of presidents who used a trigram at least once.
+
+```{r}
+corp_us_trigrams <- corp_us_tidy %>%
+unnest_tokens(trigram, text, token = "ngrams", n = 3)
+
+corp_us_trigrams %>%
+group_by(trigram) %>%
+summarize(
+FREQ = n(),
+DISPERSION = n_distinct(President)
+) %>%
+filter(DISPERSION >= 5) %>%
+arrange(desc(DISPERSION))
+```
+
+
+Frequency thresholds combined with dispersion thresholds often define lexical bundles, a concept introduced in corpus-based grammar research.
+
+## Collocations
+
+Collocation analysis examines systematic co-occurrence between words. Bigram frequencies provide the empirical basis. Association measures compare observed frequencies against expected frequencies derived from marginal totals.
+
+------------------------------------------------------------------------
+
+```{r collo1, eval=T, echo=F, out.width = "80%", fig.cap = "Cooccurrence Frequency Table"}
+knitr::include_graphics("images/collocation1.png")
+```
+
+------------------------------------------------------------------------
+
+The expected frequencies can be computed from the marginal frequencies as shown in Figure \@ref(fig:collo2).
+
+------------------------------------------------------------------------
+
+```{r collo2, eval=T, echo=F, out.width = "95%", fig.cap = "Computing Expected Frequencies"}
+knitr::include_graphics("images/collocation2.png")
+```
+
+------------------------------------------------------------------------
+
+Maybe it would be easier for us to illustrate this with a simple example:
+
+------------------------------------------------------------------------
+
+```{r collo3, eval=T, echo=F, out.width = "95%", fig.cap = "Computing Expected Frequencies"}
+knitr::include_graphics("images/collocation3.png")
+```
+
+------------------------------------------------------------------------
+
+How do we compute the expected frequencies of the four cells?
+
+------------------------------------------------------------------------
+
+```{r collo4, eval=T, echo=F, out.width = "95%", fig.cap = "Computing Expected Frequencies"}
+knitr::include_graphics("images/collocation4.png")
+```
+
+------------------------------------------------------------------------
+
+
+
+The following code computes Mutual Information and t-scores for bigrams.
+
+
+```{r}
+corp_us_collocations <- corp_us_bigrams_freq %>%
+rename(O11 = n) %>%
+separate(bigram, c("w1", "w2"), sep = "\\s") %>%
+mutate(
+R1 = corp_us_words_freq$n[match(w1, corp_us_words_freq$word)],
+C1 = corp_us_words_freq$n[match(w2, corp_us_words_freq$word)]
+) %>%
+mutate(
+E11 = (R1 * C1) / sum(O11),
+MI = log2(O11 / E11),
+t = (O11 - E11) / sqrt(O11)
+) %>%
+arrange(desc(MI))
+
+corp_us_collocations %>%
+filter(O11 > 5)
+```
+
+
+Different association measures highlight different aspects of co-occurrence strength. MI emphasizes exclusivity, while the t-score favors frequent combinations.
+
+## From Sentences to Constructions
+
+
+------------------------------------------------------------------------
+
+```{r constructionextraction, echo=F, out.width="90%", fig.cap = "Intuition for `token=` in `unnest_tokens()`"}
+knitr::include_graphics("images/unnest-tokens.png")
+```
+
+------------------------------------------------------------------------
+
+Many linguistic patterns extend beyond word boundaries. Sentence-level analysis often provides a better unit for constructional patterns.
+
+
+```{r}
+corp_us_sents <- corp_us_tidy %>%
+unnest_tokens(
+output = sentence,
+input = text,
+token = "sentences"
+)
+
+corp_us_sents
+```
+
+As an illustration, consider English Perfect constructions. A simple pattern search retrieves candidate instances.
+
+
+```{r}
+library(stringr)
+
+result_perfect <- corp_us_sents %>%
+unnest_tokens(
+perfect,
+sentence,
+token = function(x)
+str_extract_all(x, "ha(d|ve|s) \\w+(en|ed)")
+)
+
+result_perfect
+```
+
+
+This approach treats tokenization as pattern extraction. The function passed to token= receives text input and returns a list of matched strings. Such flexibility allows researchers to operationalize constructions directly.
+
+
+```{r}
+result_perfect %>%
+group_by(President) %>%
+summarize(
+TOKEN_FREQ = n(),
+TYPE_FREQ = n_distinct(perfect)
+)
+```
+
+More refined analyses would account for intervening material between auxiliary and participle and preserve sentence identifiers. These extensions highlight how corpus methods combine linguistic theory with explicit operational decisions.
+
+This chapter has outlined the basic toolkit of corpus linguistics in R. Subsequent chapters can build on these foundations to address language-specific challenges and more advanced statistical modeling.
