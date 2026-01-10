@@ -1,0 +1,232 @@
+---
+title: "What is Corpus Linguistics?"
+author: "Alvin Cheng-Hsien Chen"
+date: "Jan. @ TU, Dresden </br> 👉 <a href='https://mybinder.org/v2/gh/alvinntnu/Corpus_Linguistics_TU_Dresden/main?urlpath=rstudio' target='_blank' style='font-weight:bold;'>Launch Tutorial in Binder</a>" 
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+    toc: true
+    number_sections: true
+    df_print: paged
+    css: "static/style.css"
+output_dir: "docs"
+bibliography: "static/book.bib"
+csl: "static/apa-6th-edition.csl"
+---
+
+```{r include=F, purl=F}
+## Rmarkdown settings
+knitr::opts_chunk$set(message = F, warning = F)
+knitr::opts_chunk$set(fig.width=8, fig.height=6, dpi=300, fig.retina=2, cols.print = 5)
+
+## Automatically use showtext to render plots
+## If loading showtext throws errors, install: https://www.xquartz.org/
+library(showtext)
+showtext_auto(enable = TRUE)
+
+library(prettydoc)
+## rmarkdown::render("what_is_CL.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
+```
+
+# Why do we need corpus data?
+
+* Linguistics often rests on an unnecessary dichotomy
+
+  * Intuiting linguistic data
+
+    * Researchers invent sentences to exemplify a target phenomenon. They then judge grammaticality based on personal competence. This practice foregrounds individual introspection.
+  * Corpus data
+
+    * Corpus evidence foregrounds language use in real contexts.
+    * Corpus evidence reveals linguistic tendencies within a population through principled sampling.
+    * This contrast marks a shift from isolated impressions toward observable patterns.
+
+* Strengths of corpus data
+
+  * Data **reliability**
+
+    * Reliability asks how confidently other researchers can reach the same observations, patterns, conclusions when they apply the same method.
+
+      * Intuition-based practice limits replication, since others cannot follow the same reasoning path.
+      * Grammatical judgments vary across individuals, which weakens shared evaluation.
+  * Data **validity**
+
+    * Validity asks how closely linguistic evidence reflects underlying mental representations.
+
+      * Constructed examples from a single analyst offer limited insight into cognition.
+      * Evidence from many speakers supports stronger generalization, since population-level patterns exceed insights drawn from one mind.
+
+# What is a corpus?
+
+* The concept can be tricky: disciplines adopt different definitions
+
+  * Literature
+  * History
+  * Sociology
+  * Field linguistics
+  * Each tradition emphasizes distinct purposes, methods, data types, which explains conceptual variation.
+
+* *Linguistic corpus* in corpus linguistics [@stefanowitsch2019]
+
+  * Authentic: texts originate from real communicative settings.
+  * Representative: the collection reflects a defined language variety, register, genre.
+  * Large: the size supports robust pattern detection, quantitative analysis.
+
+* A few widely cited definitions
+
+  > "a collection of texts which have been selected and brought together so that language can be studied on the computer" [@wynne2006]
+  
+  * This definition foregrounds purposeful selection, computational analysis.
+
+  > "A corpus is a collection of pieces of language text in electronic form, selected according to external criteria to represent, as far as possible, a language or language variety as a source of data for linguistic research." (John Sinclair in [@wynne2006])
+  
+  * This definition stresses principled design, representativeness, research orientation.
+
+  > "A corpus refers to a machine-readable collection of (spoken or written) texts that were produced in a natural communicative setting, in which the collection is compiled with the intention (1) to be representative, balanced with respect to a particular language, variety, register, genre, (2) to be analyzed linguistically." [@gries2016]
+  
+  * This definition highlights authenticity, balance, explicit analytical purpose.
+
+
+# What is a corpus linguistic study?
+
+* CL characteristics
+
+  * No general consensus defines the field.
+  * The methodological framework lacks strong homogeneity.
+  * Compared with many subdisciplines in linguistics, the field emerged relatively recently.
+
+* Intertwined with many linguistic fields
+
+  * Interactional linguistics, cognitive linguistics, functional syntax, usage-based grammar.
+  * Stylometry, computational linguistics, NLP, digital humanities, text mining, sentiment analysis.
+  * This breadth shows how corpus work connects theory, method, application across domains.
+
+* Corpus-based versus corpus-driven [cf. @tognini2001]
+
+  * **Corpus-based** studies
+
+    * Researchers use corpus data to test a theory, evaluate a hypothesis, refine analytical claims.
+    * This approach treats corpus linguistics as a methodological toolkit.
+    
+  * **Corpus-driven** studies
+
+    * Researchers reject the view of corpus linguistics as a mere method.
+    * They argue that the corpus itself should function as the sole source of hypotheses about language.
+    * This position claims that the corpus itself embodies a theory of language [@tognini2001, pp. 84–85].
+
+* Note on the distinction
+
+  * The boundary between corpus-based, corpus-driven work can appear subtle.
+  * Both approaches often connect closely with the broader usage-based grammar framework.
+  * Chapter 11 in @croft2004 offers a clear introduction to usage-based models.
+  * Pattern grammar provides a well-known example of a corpus-driven framework.
+  * @hunston2000 offers a comprehensive introduction to pattern grammar.
+
+* Definition of *Corpus Linguistics* [@stefanowitsch2019]
+
+  > Corpus linguistics is the investigation of linguistic research questions that have been framed in terms of the conditional distribution of linguistic phenomena in a linguistic corpus.
+
+* More on **conditional distribution**
+
+  * An *exhaustive* investigation
+
+    * Text-processing technology supports large-scale analysis.
+
+      * Retrieval and coding
+      * Regular expressions
+    * Common methods
+
+      * KWIC concordances
+      * Collocates
+      * Frequency lists
+      
+  * A *systematic* investigation
+
+    * Researchers examine how a phenomenon distributes under specific conditions such as lexical, syntactic, social, pragmatic contexts.
+    * Statistical properties of language guide interpretation.
+
+* Examples of corpus linguistic research questions
+
+  * When do English speakers use the complementizer *that*?
+  * What differences distinguish *small* from *little*?
+  * When do English speakers choose “*He picked up the book*” in contrast to “*He picked the book up*”?
+  * When do English speakers place adverbial clauses before the matrix clause?
+  * Do speakers use distinct linguistic forms across genres?
+  * Does the word “gay” show different usage patterns across historical periods?
+  * Do L2 learners use collocation patterns similar to L1 speakers?
+  * Do speakers from different socio-economic classes use language in distinct ways?
+
+
+# Formulating corpus linguistic research questions
+
+* Task description
+
+  * Formulate one research question that fits a corpus linguistic study.
+  * Use the template below as a guide.
+  * Clarify how the question reflects the logic of conditional distribution.
+
+> I am interested in the linguistic structure of **X**. I would like to examine how it varies across **context A**, **context B**, **context C**. I focus on its distribution in relation to **factor Y**.
+
+* Example 1
+
+  * Research interest
+
+    * I am interested in the structure of stance adverbs such as *actually*, *clearly*, *perhaps*.
+  * Research question
+
+    * How does the use of stance adverbs vary across academic writing, newspaper discourse, spoken conversation, with attention to speaker commitment?
+  * Conditional distribution
+
+    * The analysis compares the distribution of stance adverbs under different discourse conditions.
+    * The conditioning factors include genre, communicative goal, epistemic stance.
+
+* Example 2
+
+  * Research interest
+
+    * I am interested in the structure of noun phrase modification in learner English.
+  * Research question
+
+    * How does noun phrase complexity change across proficiency levels in learner corpora, in relation to task type?
+  * Conditional distribution
+
+    * The analysis traces how one linguistic phenomenon distributes under conditions defined by proficiency level, task context.
+
+* Key idea behind conditional distribution
+
+  * A corpus linguistic study does not ask whether a form exists.
+  * A corpus linguistic study asks where, when, how often, under which conditions a form occurs.
+  * The explanatory force comes from systematic comparison across clearly defined contexts.
+
+
+# Additional information on corpus linguistics
+
+* Key journals in corpus linguistics
+
+  * *Corpus Linguistics Linguistic Theory* — theory-oriented corpus research.
+  * *International Journal of Corpus Linguistics* — core venue for methodological research.
+  * *Corpora* — focus on corpus design, annotation, empirical analysis.
+  * *Applied Linguistics* — frequent corpus-based work in applied domains.
+  * *Computational Linguistics* — strong links to large-scale corpus analysis.
+  * *Digital Scholarship in the Humanities* — corpus methods within humanities research.
+  * *Language Teaching* — corpus-informed perspectives on pedagogy.
+  * *Language Learning* — empirical studies using learner corpora.
+  * *Journal of Second Language Writing* — corpus approaches to writing research.
+  * *CALL* — technology-supported learning informed by corpus evidence.
+  * *Language Teaching Research* — classroom-focused studies using corpus insights.
+  * *ReCALL* — technology, corpora, language learning.
+  * *System* — discourse, pedagogy, corpus-informed analysis.
+
+* Major conferences relevant to corpus linguistics
+
+  * Corpus Linguistics Conference — flagship meeting, often hosted in the UK.
+  * International Association of Applied Linguistics — strong corpus presence across thematic panels.
+  * American Association for Corpus Linguistics — dedicated forum for corpus research.
+  * American Association for Applied Linguistics — frequent corpus-based strands.
+  * Teaching Language Corpora Conference — focus on pedagogy, learner corpora.
+  * International Cognitive Linguistics Conference — growing corpus-based cognitive work.
+  * International Conference on Construction Grammar — increasing engagement with corpus evidence.
+
+
+# References

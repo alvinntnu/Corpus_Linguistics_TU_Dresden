@@ -35,7 +35,7 @@ library(prettydoc)
 </p>
 
 
-## Loading packages
+# Loading packages
 
 ```{r}
 library(tidyverse)
@@ -46,7 +46,7 @@ library(jiebaR)
 library(readtext)
 ```
 
-## Objectives
+# Objectives
 
 In this tutorial, I would like to talk about the relationship between a construction and words. Words may co-occur to form **collocation** patterns. When words co-occur with a particular morphosyntactic pattern, they would form **collostruction** patterns.
 
@@ -66,22 +66,32 @@ This tutorial will first focus on **collexeme analysis**, whose principles can b
 
 Also, I will demonstrate how we can conduct a collexeme analysis by using the R script written by Stefan Gries ([Collostructional Analysis](http://www.stgries.info/teaching/groningen/index.html)).
 
-## Corpus
+# Corpus
 
-As a demonstration, we use the Apple News Corpus (`demo_data/applenews10000.tar.gz`).
+As a demonstration, we use a pre-loaded corpus that comes with the `quanteda` package, `data_corpus_inaugural`. This is a corpus of US presidential inaugural address texts, and metadata for the corpus from 1789 to present.
 
-Our target is the Chinese construction `X + 起來`. The goal is to discover which words most frequently fill the `X` slot and what this reveals about the semantics of the construction.
+We begin by looking at this preloaded corpus data:
 
-That is, we want to identify the collexemes of `X + 起來` and examine how coherent they are in meaning.
+```{r}
+data_corpus_inaugural
+class(data_corpus_inaugural)
+```
 
-We begin by loading the corpus and creating a `corpus` object.
+# Objective
+
+Let's assume that we are interested in the use of *Perfect* aspect in English by different presidents. We can try to extract Perfect constructions (including Present/Past Perfect) from each sentence using the regular expression.
+
+Here we make a simple naive assumption: Perfect constructions include all `have/has/had + ...-en/ed` tokens from the sentences.
+
+# Preprocessing
 
 ```{r purl=T}
 ## Load Data
-apple_df <-
-  readtext("demo_data/applenews10000.tar.gz", encoding = "UTF-8") %>% ## loading data
-  filter(!str_detect(text, "^\\s*$")) %>% ## removing empty docs
+corpus_df <-
+  data.frame(text = as.character(data_corpus_inaugural)) %>% ## loading data
   mutate(doc_id = row_number()) ## create index
+
+head(corpus_df)
 ```
 
 ::: try
@@ -112,92 +122,42 @@ normalize_document <- function(texts) {
 ```{r}
 ## Example usage of `normalize_document()`
 ## before cleaning
-apple_df$text[1]
+corpus_df$text[1]
 ## after cleaning
-normalize_document(apple_df$text[1])
+normalize_document(corpus_df$text[1])
 ```
 
 - Preprocess all texts in the corpus
 
 ```{r}
 ## Apply cleaning to all docs
-apple_df$text <- normalize_document(apple_df$text)
+corpus_df$text <- normalize_document(corpus_df$text)
 ```
 
 ```{r echo=F, purl=F}
-apple_df %>%
+corpus_df %>%
   head(100) %>%
   mutate(text = str_sub(text, 0,100) %>% sprintf("%s...",.))
 ```
 
 
-## Word Segmentation
-
-Next we segment the texts into words using `jiebaR.` The steps are:
-
-- Initialize a `jiebar` segmentation model with `worker()`.
-- Define a function `word_seg_text()` to tokenize the text and, if needed, add POS tags.
-- Apply this function to all texts and create a new column containing the segmented strings.
-
-This new column will serve as the basis for later construction extraction.
-
-```{r purl=T}
-## Initialize jiebar
-segmenter <- worker(user = "demo_data/dict-ch-user.txt", ## User-defined Dictionary
-                    bylines = FALSE, ## ignore lines
-                    symbol = FALSE)  ## ignore symbols
-```
-
-```{r}
-## Define function
-word_seg_text <- function(text, jiebar) {
-  segment(as.character(text), jiebar) %>% ## word segmentation
-    str_c(collapse = " ")                 ## concatenate word tokens into long strings
-}
-```
-
-```{r}
-## Apply the function
-apple_df <- apple_df %>%
-  mutate(text_tag = map_chr(text, ~ word_seg_text(.x, segmenter)))
-```
-
-::: info
-
-The function `word_seg_text()` tokenizes Chinese text into words and produces an enriched version of the text with explicit word boundaries.
-
-```{r}
-word_seg_text(apple_df$text[1], segmenter)
-```
-
-:::
-
-::: alert
+:::{.alert}
 
 In this example we did not add POS tags in order to keep things simple.
-For actual research, POS information can be very useful for retrieving constructions more accurately. You may therefore want to adapt both the `word_seg_text()` function and the `worker()` model to include POS tagging.
+For actual research, POS information can be very useful for retrieving constructions more accurately. You may therefore want to utilize other existing POS taggers for more sophisticated preprocessing (e.g., `[spacyr](https://cran.r-project.org/web/packages/spacyr/vignettes/using_spacyr.html)`).
 
 :::
 
 
-```{r echo=F, purl=F}
-apple_df %>%
-  head(100) %>%
-  mutate(text = str_sub(text, 0,100) %>% sprintf("%s...",.),
-         text_tag = str_sub(text_tag, 0,100) %>% sprintf("%s...",.))
-```
+# Extract Constructions
 
+With segmented texts, we can now extract our target construction: Perfect Aspect Constructions. using a regular expression and `unnest_tokens()`.
 
-## Extract Constructions
-
-With segmented texts, we can now extract our target construction `X + 起來` using a regular expression and `unnest_tokens()`.
-
-::: info
+:::{.info}
 
 Both [regular expressions](https://en.wikipedia.org/wiki/Regular_expression) and [corpus query languages](https://www.sketchengine.eu/documentation/corpus-querying/) share the idea of pattern matching. They let you describe a search pattern in a formal way and then scan through text to find all the places where that pattern occurs. In both cases, you write rules instead of manually searching, which makes them powerful for handling large amounts of data.
 
 The key difference is that regex patterns work only on surface strings, while corpus query languages extend this logic to structured linguistic information.
-
 :::
 
 
@@ -205,7 +165,7 @@ The key difference is that regex patterns work only on surface strings, while co
 
 ```{r purl=T}
 ## Define regex
-pattern_qilai <- "[^\\s]+\\s起來\\b"
+pattern_perfect <- "ha(d|ve|s) \\w+(en|ed)\\b"
 
 ```
 
@@ -213,13 +173,12 @@ pattern_qilai <- "[^\\s]+\\s起來\\b"
 
 ```{r}
 ## Extract patterns
-apple_qilai <- apple_df %>%
-  select(-text) %>% ## dont need original texts
+corpus_perfect <- corpus_df %>%
   unnest_tokens(
     output = construction, ## name for new unit
-    input = text_tag, ## name of old unit
+    input = text, ## name of old unit
     token = function(x) ## unnesting function
-      str_match_all(x, pattern = pattern_qilai)
+      str_extract_all(x, pattern = pattern_perfect)
   )
 
 ```
@@ -228,27 +187,28 @@ apple_qilai <- apple_df %>%
 
 ```{r}
 ## Print
-apple_qilai
+corpus_perfect
 ```
 
-## Exploratory/Descriptive Analysis
+# Exploratory/Descriptive Analysis
 
 Usually before the statistical/quantitative analysis, we examine our data in an exploratory way.
 
 ```{r}
-apple_qilai %>%
-  group_by(construction) %>%
+corpus_perfect %>%
+  separate(construction, into = c("AUX","VERB")) %>%
+  group_by(VERB) %>%
   summarize(freq = n(),
-            docfreq = n_distinct(doc_id)) -> apple_qilai_dist
+            docfreq = n_distinct(doc_id)) -> corpus_perfect_dist
 
-apple_qilai_dist %>% 
+corpus_perfect_dist %>% 
   arrange(-freq) %>%
   top_n(50, freq)
 ```
 
-## Distributional Information Needed for Collostruction Analysis
+# Distributional Information Needed for Collostruction Analysis
 
-To perform the **collexeme analysis**, which is essentially a statistical analysis of the association between words and a specific construction, we need to collect necessary distributional information of the words (`X`) and the construction (`X + 起來`).
+To perform the **collexeme analysis**, which is essentially a statistical analysis of the association between words and a specific construction, we need to collect necessary distributional information of the words (`VERB`) and the construction (`AUX+VERB`).
 
 In particular, to use Stefan Gries' R script of Collostructional Analysis, we need three types of frequency information:
 
@@ -258,15 +218,15 @@ In particular, to use Stefan Gries' R script of Collostructional Analysis, we ne
 
 ::: info
 
-Example with the word `使用`:
+Example with the verb `given`:
 
-- Joint frequency = number of times `使用 + 起來` occurs.
-- Word frequency = total count of `使用` in the corpus.
+- Joint frequency = number of times `AUX + given` occurs.
+- Word frequency = total count of `given` in the corpus.
 - Corpus size = total number of word tokens.
 
 :::
 
-### Word Frequency List
+## Word Frequency List
 
 We start by creating a word frequency list for the corpus.
 
@@ -274,46 +234,38 @@ This involves converting the **text-based** data frame into a **word-based** one
 
 ```{r purl=T}
 ## create word freq list
-apple_word_freq <- apple_df %>%
-  select(-text) %>% ## dont need original raw texts
+corpus_word_freq <- corpus_df %>%
   unnest_tokens( ## tokenization
     word,  ## new unit
-    text_tag,  ## old unit
-    token = function(x)  ## tokenization function
-      str_split(x, "\\s+")
-  ) %>%
-  filter(nzchar(word)) %>% ## remove empty strings
+    text,  ## old unit
+    token = "words")  %>% ## remove empty strings
   count(word, sort = T)
 
-apple_word_freq %>%
+corpus_word_freq %>%
   head(100)
 ```
 
 ::: alert
-In the above example, when we convert our data frame from a text-based to a word-based one, we didn't use any specific tokenization function in `unnest_tokens()` because we have already obtained the **enriched version** of the texts, i.e., texts where each word token is delimited by a white-space. Therefore, the `unnest_tokens()` here is a lot simpler: we simply tokenize the texts into word tokens based on the **known delimiter**, i.e., the white-spaces.
+In the above example, when we convert our data frame from a text-based to a word-based one, we used the default tokenizer defined in `unnest_tokens()`, which is optimized for the English data.
 :::
 
-### Joint Frequencies
+## Joint Frequencies
 
-We now calculate the joint frequencies of `X `and the construction `X + 起來`.
+We now calculate the joint frequencies of the VERB and the AXU, namely the construction frequency of `AUX + given`.
 
 Since we also have the word frequency list, we can link these counts together.
 
 
 ```{r purl=T}
 ## Joint frequency table
-apple_qilai_freq <- apple_qilai %>%
-  count(construction, sort = T) %>%  ## get joint frequencies
-  tidyr::separate(col = "construction", ## restructure data frame
-                  into = c("word", "construction"),
-                  sep = "\\s") %>%
-  ## identify the freq of X in X_起來
-  mutate(word_freq = apple_word_freq$n[match(word, apple_word_freq$word)])
 
-apple_qilai_freq
+corpus_perfect_dist <- corpus_perfect_dist %>%
+  mutate(verb_freq_in_corpus = corpus_word_freq$n[match(VERB, corpus_word_freq$word)])
+
+corpus_perfect_dist
 ```
 
-### Input for `coll.analysis.r`
+## Input for `coll.analysis.r`
 
 Now we have almost all distributional information needed for the Collostructional Analysis.
 
@@ -329,13 +281,13 @@ Stefan Gries’ `coll.analysis.r` expects a **tab-delimited** file with three co
 ```{r purl=T}
 ## prepare a tsv
 ## for coll analysis
-apple_qilai_freq %>%
-  select(word, word_freq, n) %>%
-  write_tsv("qilai.tsv")
+corpus_perfect_dist %>%
+  select(VERB, verb_freq_in_corpus,freq) %>%
+  write_tsv("perfect.tsv",col_names = FALSE)
 ```
 
 ```{r echo=F, out.width="40%"}
-knitr::include_graphics("static/collexeme_input.png")
+knitr::include_graphics("images/collexeme_input.png")
 ```
 
 
@@ -344,7 +296,7 @@ Be sure to save the input as a **TSV** (tab-delimited) file, not **CSV**.
 The script will not accept comma-delimited input.
 :::
 
-### Corpus Size
+## Corpus Size
 
 In addition to the input file, Stefan Gries' `coll.analysis.r` also requires a few general statistics for the computing of association measures.
 
@@ -357,8 +309,8 @@ Later when we run Gries' script, we need to enter these numbers manually in the 
 
 ```{r purl=T}
 ## corpus information
-cat("Corpus Size: ", sum(apple_word_freq$n), "\n")
-cat("Construction Size: ", sum(apple_qilai_freq$n), "\n")
+cat("Corpus Size: ", sum(corpus_word_freq$n), "\n")
+cat("Construction Size: ", sum(corpus_perfect_dist$freq), "\n")
 ```
 
 ------------------------------------------------------------------------
@@ -371,18 +323,18 @@ The function `sink()` redirects printed output to a file.
 
 ```{r purl=T, results=F, collapse=T}
 ## save info in a text
-sink("qilai_info.txt") ## start flushing outputs to the file not the terminal
-cat("Corpus Size: ", sum(apple_word_freq$n), "\n")
-cat("Construction Size: ", sum(apple_qilai_freq$n), "\n")
+sink("perfect_info.txt") ## start flushing outputs to the file not the terminal
+cat("Corpus Size: ", sum(corpus_word_freq$n), "\n")
+cat("Construction Size: ", sum(corpus_perfect_dist$freq), "\n")
 sink() ## end flushing
 ```
 
-This will create a file `qilai_info.txt` in your working directory with the saved results.
+This will create a file `perfect_info.txt` in your working directory with the saved results.
 
 :::
 
 
-## Running Collostructional Analysis
+# Running Collostructional Analysis
 
 We are now ready to run the analysis by sourcing [`coll.analysis.r`](https://www.stgries.info/teaching/groningen/index.html), available on Stefan Gries’ website.
 
@@ -405,16 +357,16 @@ The script runs interactively, asking you to provide the required information.
 For our example, the answers would be:
 
 - `Analysis to perform`: 1
-- `Name of construction`: QL
-- `Corpus size`: `r sum(apple_word_freq$n)`
+- `Name of construction`: PF
+- `Corpus size`: `r sum(corpus_word_freq$n)`
 - `Fisher-Yates`: no
-- `Tab-delimited input data`: `qilai.tsv`
+- `Tab-delimited input data`: `perfect.tsv`
 
 ------------------------------------------------------------------------
 
 If everything runs correctly, you will get a tab-delimited CSV output file in your working directory with the results.
 
-## Interpretations
+# Interpretations
 
 The output is a tab-delimited file with statistics for each candidate collexeme.
 
@@ -425,7 +377,7 @@ A sample result file is available in the root directory `2025-10-XX XX-XX-XXXX.c
 ```{r purl=T}
 
 ## convert into CSV
-collo_table<-read_tsv("2025-10-03 08-35-47.915105.csv")
+collo_table<-read_tsv("2026-01-10 05-09-16.359215.csv")
 
 ## auto-print
 collo_table %>%
@@ -435,7 +387,7 @@ collo_table %>%
   select(WORD, LLR, everything())
 ```
 
-The output includes several useful **COLLSTRENGTH** measures, specifying the association between the collexemes and the slot of the construction (`V + 起來`).
+The output includes several useful **COLLSTRENGTH** measures, specifying the association between the collexemes and the slot of the construction (`AUX + ______ `).
 
 - LLR/PMI
 - Log Odds Ratio
@@ -458,19 +410,19 @@ Here we focus on the top 10 collexemes by four metrics:
 ## from wide to long
 collo_table %>%
   filter(RELATION == "attraction") %>%
-  filter(QL >=5) %>%
-  select(WORD, QL, 
+  filter(PF >=5) %>%
+  select(WORD,PF, 
          DELTAPC2W, 
          DELTAPW2C,
          LLR) %>%
-  pivot_longer(cols=c("QL", 
+  pivot_longer(cols=c("PF", 
                       "DELTAPC2W", 
                       "DELTAPW2C",
                       "LLR"),
                names_to = "METRIC",
                values_to = "STRENGTH") %>%
   mutate(METRIC = factor(METRIC, 
-                         levels = c("QL", 
+                         levels = c("PF", 
                                    "DELTAPC2W",
                                    "DELTAPW2C",
                                    "LLR"))) %>%
@@ -495,9 +447,10 @@ coll_table_long %>%
 
 The bar plots above show the top 10 collexemes based on four different metrics: `QL`, `DELTAPC2W`, `DELTAPW2C`, and `LLR`.
 
-::: alert
+:::{.alert}
 
 Please review the assigned readings for details on how **collostructional strengths** are calculated.
+
 In particular, @stefanowitsch2003 explains why Fisher’s exact test-based measures provide advantages over raw frequency counts.
 
 Also note that **delta P** is a directional association measure that has been increasingly used in psycholinguistic research (see @ellis2006; @gries2013).
@@ -507,18 +460,7 @@ It is important to understand both how delta P is computed and how it should be 
 :::
 
 
-::: exercise
-If we look at the top 10 collexemes ranked by the collostrength, we would see a few puzzling collexemes, such as `一`, `了`, `不`. Please identify these puzzling construction tokens as concordance lines (using `quanteda::kwic()`) and discuss their issues and potential solutions.
-:::
-
-```{r eval=T, echo=F}
-apple_tokens<-as.tokens(str_split(apple_df$text_tag,"\\s+"))
-kwic(apple_tokens, pattern = phrase("了 起來"))
-kwic(apple_tokens, pattern = phrase("一 起來"))
-kwic(apple_tokens, pattern = phrase("不 起來"))
-```
-
-## Distinctive Collexeme Analysis
+# Distinctive Collexeme Analysis
 
 We can also use Stefan Gries’ script `coll.analysis.r` to perform a **Distinctive Collexeme Analysis**.
 
@@ -536,7 +478,7 @@ For this example, the answers to the prompts would be:
 -   `number of distinctive categories`: 2 (or more if there are 3+ alternatives)  
 -   `tab-delimited input data`: `<demo_data/input-distcollexeme.tsv>`  
 
-:::info
+:::{.info}
 
 For a **Distinctive Collexeme Analysis**, the input should be a data frame that lists each construction token in the corpus, with two key columns:
 
@@ -548,7 +490,7 @@ In our case, the constructional elements are the degree adverbs, and the collexe
 The following figure shows how these were annotated in concordance lines:
 
 ```{r echo=F, out.width="100%"}
-knitr::include_graphics("static/degree_adv_annotation_example.png")
+knitr::include_graphics("images/degree_adv_annotation_example.png")
 ```
 
 For Stefan’s script, we only need these two columns from the data: the collexemes and their associated constructional element.
@@ -575,7 +517,7 @@ dist_results <- read_tsv("2025-10-02 04-10-56.334203.csv")
 dist_results
 ```
 
-::: info
+:::{.info}
 
 In *distinctive collexeme analysis*, the two columns mean:
 
@@ -609,5 +551,5 @@ dist_results %>%
 
 ```
 
-## References
+# References
 

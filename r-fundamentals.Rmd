@@ -25,6 +25,7 @@ knitr::opts_chunk$set(fig.width=8, fig.height=6, dpi=300, fig.retina=2, cols.pri
 library(showtext)
 showtext_auto(enable = TRUE)
 
+library(prettydoc)
 ## rmarkdown::render("r-fundamentals.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
 ```
 
@@ -35,12 +36,12 @@ showtext_auto(enable = TRUE)
 </p>
 
 
-## R Fundamentals {#r-fundamentals}
+# R Fundamentals {#r-fundamentals}
 
 - Download R: [R-Project](https://cloud.r-project.org) 
 - IDE: [RStudio](https://www.rstudio.com/products/rstudio) 
 
-## Installing R
+# Installing R
 
 Download the installation file: [http://cran.r-project.org](https://cloud.r-project.org)
 
@@ -48,7 +49,7 @@ Download the installation file: [http://cran.r-project.org](https://cloud.r-proj
 ![](images/Rinstall.png)
  
 
-## Installing RStudio
+# Installing RStudio
 
 After you install R, you may install RStudio. RStudio is an editor which can help you write R codes. A good analogy is that R is the engine and Rstudio is the dashboard of the car.
 
@@ -68,7 +69,7 @@ knitr::include_graphics("images/Rstudio_install.png")
 ```
 
 
-:::{.danger}
+:::{.alert}
 - Important notes:
   - Do not have Chinese characters in your directory names or on the path to the files
   - Do not have spaces and weird symbols in your file path:
@@ -77,17 +78,14 @@ knitr::include_graphics("images/Rstudio_install.png")
     - `/User/Alvinchen/`
 :::
 
-## My Current Version
+# My Current Version
 
-```{r echo=FALSE, out.width="90%", purl=F }
-##knitr::include_graphics("images/current-r-rstudio-version.png")
-```
 
 ```{r}
 sessionInfo()
 ```
 
-## The Interface of Rstudio
+# The Interface of Rstudio
 
 When you start Rstudio, you will see an interface as follows:
 
@@ -162,7 +160,7 @@ print(y)
 ```
 
 
-## Data Structure
+# Data Structure
 
 In R, the most primitive object is a **vector**. There are three types of primitive vectors: (a) numeric, (b) character, and (c) Boolean vectors. In our previous examples, `x` is a numeric vector of one element; `y` is a character vector of one element. The following code shows an example of a Boolean vector `z`. 
 
@@ -171,6 +169,7 @@ In R, the most primitive object is a **vector**. There are three types of primit
 z <- TRUE
 z
 ```
+
 All elements in the vector have to be **of the same data type**.
 
 The vectors we've created so far are vectors of only ONE ELEMENT. You use `c()` to create a vector of **multiple** elements. Within the parenthesis, you concatenate each element of the vector by `,`:
@@ -216,7 +215,7 @@ The following graph shows you an intuitive understanding of the data structures 
 knitr::include_graphics("images/r-data-structure.png")
 ```
 
-## Function
+# Function
 
 Function is also an object class. There are many functions pre-defined in the R-base libraries. 
 
@@ -273,7 +272,7 @@ student_current_scores <- c(20, 34, 60, 87, 100)
 make_students_happy(old_scores = student_current_scores)
 ```
 
-## Vectorization
+# Vectorization
 
 Many operations in R are vectorized, meaning that operations occur in parallel in certain R objects. This allows you to write code that is efficient, concise, and easier to read than in non-vectorized languages.
 
@@ -307,7 +306,7 @@ y == 8
 ```
 
 
-## Script
+# Script
 
 In our earlier demonstrations, we ran R codes by entering each procedure line by line. We can create one script file with the Editor of Rstudio and include all our R codes in the file, which usually has the file extension of `.R`. And then we can run all commands included in the whole script all at once in the Rstudio (i.e., sending everything in the script file to the R console).
 
@@ -317,7 +316,7 @@ First you open the `*.R` script file in Rstudio, which should appear in the Edit
 knitr::include_graphics("images/Rstudio_editor.png")
 ```
 
-## Library
+# Library
 
 R, like other programming languages, comes with a huge database of packages and extensions, allowing us to do many different tasks without worrying about writing the codes all from the scratch. In [CRAN Task Views](https://cran.r-project.org/web/views/), you can find specific packages that you need for particular topics/tasks.
 
@@ -330,7 +329,7 @@ install.packages(c("ggplot2", "devtools", "dplyr"))
 
 In this course, I would like to recommend all of you to install the package `tidyverse`, which is a bundle including several useful packages for data analysis. During the installation, if you are asked about whether to install the package from **source**, please enter `yes` (See below for more detail).
 
-:::{.danger}
+:::{.alert}
 During the R package installation, if you see messages like `installation of package XXX had non-zero exit status`, this indicates that the package has **NOT** been properly installed in your R environment. That is, something is **WRONG** (See below as well). You need to figure out a way to solve the issues indicated in the error messages so that you can successfully install the package in your R system.
 :::
 
@@ -352,7 +351,7 @@ However, for the other packages, I would still recommend you to install the pack
 :::
 
 
-## Setting
+# Setting
 
 Always set your default encoding of the files to UTF-8:
 
@@ -360,7 +359,7 @@ Always set your default encoding of the files to UTF-8:
 knitr::include_graphics("images/Rstudio_utf8.png")
 ```
 
-## Seeking Help
+# Seeking Help
 
 In the process of (learning) programming, one thing you will never be able to dodge is feeling desperate for help. Here are some useful sources from which you may get additional assistance.
 
@@ -408,7 +407,7 @@ The following is a list of resources where people usually get external assistanc
   - stackoverflow: <https://stackoverflow.com/questions/tagged/r>
   - rstudio: <https://community.rstudio.com/>
 
-## Language Learning Ain't Easy!
+# Language Learning Ain't Easy!
 
 ```{r echo=F,  out.width = "80%" , purl=F}
 knitr::include_graphics("images/panic.jpg")
@@ -439,7 +438,7 @@ That being said, here I would like to share with you some of the most common pro
   * Did R produce the intended result?
   * What is included in the R object name?
   
-## Keyboard Shortcuts
+# Keyboard Shortcuts
 
 The best way to talk to a computer is via the keyboard. Scripting requires a lot of typing. Keyboard shortcuts may save you a lot of time. Here are some of the handy shortcuts:
 
