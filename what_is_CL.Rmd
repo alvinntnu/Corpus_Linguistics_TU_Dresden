@@ -25,8 +25,6 @@ knitr::opts_chunk$set(fig.width=8, fig.height=6, dpi=300, fig.retina=2, cols.pri
 library(showtext)
 showtext_auto(enable = TRUE)
 
-library(prettydoc)
-## rmarkdown::render("what_is_CL.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
 ```
 
 # Why do we need corpus data?

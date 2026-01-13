@@ -1,5 +1,5 @@
 /* Base style for all special blocks */
-.alert, .info, .try, .exercise {
+.alert, .info, .try, .practice {
   border-radius: 8px;
   padding: 1em 1.2em 1em 3.8em; /* left padding for icon space t r b l */
   margin: 1.2em 0;
@@ -12,7 +12,7 @@
 .alert::before,
 .info::before,
 .try::before,
-.exercise::before {
+.practice::before {
   position: absolute;
   left: 0.3em;
   top: 0.3em;
@@ -50,19 +50,23 @@
   content: "✅";
 }
 
-/* Exercise (yellow, tasks) */
-.exercise {
-  background-color: #fff9e6;
-  border-left: 6px solid #ffc107;
-  color: #856404;
-  font-weight: 500;
+/* Exercise (light green, tasks) */
+.practice {
+  background-color: #e8f5e9;
+    border-left: 6px solid #4caf50;
+  color: #1b5e20;
+    font-weight: 500;
 }
-.exercise::before {
+
+.practice::before {
   content: "📝";
 }
+
+
 
 .csl-entry {
   padding-left: 2em;
   text-indent: -2em;
   margin-bottom: 0.5em;
 }
+

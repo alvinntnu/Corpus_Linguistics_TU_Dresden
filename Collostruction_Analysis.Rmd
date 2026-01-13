@@ -24,8 +24,7 @@ knitr::opts_chunk$set(fig.width=8, fig.height=6, dpi=300, fig.retina=2, cols.pri
 ## If loading showtext throws errors, install: https://www.xquartz.org/
 library(showtext)
 showtext_auto(enable = TRUE)
-library(prettydoc)
-## rmarkdown::render("collostruction_analysis.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
+
 ```
 
 <p align="center">
@@ -79,11 +78,35 @@ class(data_corpus_inaugural)
 
 # Objective
 
-Let's assume that we are interested in the use of *Perfect* aspect in English by different presidents. We can try to extract Perfect constructions (including Present/Past Perfect) from each sentence using the regular expression.
+* Research focus
 
-Here we make a simple naive assumption: Perfect constructions include all `have/has/had + ...-en/ed` tokens from the sentences.
+  * Interest centers on the use of the English *Perfect* aspect across different presidents.
+  * The goal involves comparing how this grammatical structure appears across speakers.
+
+* Methodological idea
+
+  * Perfect constructions can be extracted from sentences through a regular expression.
+  * This approach supports systematic pattern identification in corpus data.
+
+* Working assumption
+
+  * For this exercise, Perfect constructions include all sequences that match the pattern `have/has/had + ...-en/ed`.
+  * This assumption remains simple, practical, transparent for exploratory analysis.
+
 
 # Preprocessing
+
+:::{.info}
+
+Raw texts often contain unwanted characters such as invisible **control codes**, **extra spaces**, or **duplicate line breaks**.
+
+These can interfere with segmentation accuracy. It is therefore a good idea to clean the texts before tokenization.
+
+Here we used a simple function, `normalize_document()`, but you can always design a more specialized version for your own data.
+
+:::
+
+- This is our current data in a data frame format (document-based):
 
 ```{r purl=T}
 ## Load Data
@@ -93,16 +116,6 @@ corpus_df <-
 
 head(corpus_df)
 ```
-
-::: try
-
-Raw texts often contain unwanted characters such as invisible **control codes**, **extra spaces**, or **duplicate line breaks**.
-
-These can interfere with segmentation accuracy. It is therefore a good idea to clean the texts before tokenization.
-
-Here we used a simple function, `normalize_document()`, but you can always design a more specialized version for your own data.
-
-:::
 
 - Define how we would like to preprocess the data:
 
@@ -140,11 +153,12 @@ corpus_df %>%
   mutate(text = str_sub(text, 0,100) %>% sprintf("%s...",.))
 ```
 
-
 :::{.alert}
 
 In this example we did not add POS tags in order to keep things simple.
-For actual research, POS information can be very useful for retrieving constructions more accurately. You may therefore want to utilize other existing POS taggers for more sophisticated preprocessing (e.g., `[spacyr](https://cran.r-project.org/web/packages/spacyr/vignettes/using_spacyr.html)`).
+For actual research, POS information can be very useful for retrieving constructions more accurately. 
+
+You may therefore want to utilize other existing POS taggers for more sophisticated preprocessing (e.g., [spacyr](https://cran.r-project.org/web/packages/spacyr/vignettes/using_spacyr.html)).
 
 :::
 
@@ -220,7 +234,7 @@ In particular, to use Stefan Gries' R script of Collostructional Analysis, we ne
 
 Example with the verb `given`:
 
-- Joint frequency = number of times `AUX + given` occurs.
+- Joint frequency = number of times `AUX(have/had/has) + given` occurs.
 - Word frequency = total count of `given` in the corpus.
 - Corpus size = total number of word tokens.
 
@@ -236,8 +250,8 @@ This involves converting the **text-based** data frame into a **word-based** one
 ## create word freq list
 corpus_word_freq <- corpus_df %>%
   unnest_tokens( ## tokenization
-    word,  ## new unit
-    text,  ## old unit
+    output = word,  ## new unit
+    input = text,  ## old unit
     token = "words")  %>% ## remove empty strings
   count(word, sort = T)
 
@@ -245,7 +259,7 @@ corpus_word_freq %>%
   head(100)
 ```
 
-::: alert
+:::{.alert}
 In the above example, when we convert our data frame from a text-based to a word-based one, we used the default tokenizer defined in `unnest_tokens()`, which is optimized for the English data.
 :::
 
@@ -256,9 +270,12 @@ We now calculate the joint frequencies of the VERB and the AXU, namely the const
 Since we also have the word frequency list, we can link these counts together.
 
 
+
 ```{r purl=T}
 ## Joint frequency table
+corpus_perfect_dist
 
+## Add verb freq
 corpus_perfect_dist <- corpus_perfect_dist %>%
   mutate(verb_freq_in_corpus = corpus_word_freq$n[match(VERB, corpus_word_freq$word)])
 
@@ -370,7 +387,7 @@ If everything runs correctly, you will get a tab-delimited CSV output file in yo
 
 The output is a tab-delimited file with statistics for each candidate collexeme.
 
-A sample result file is available in the root directory `2025-10-XX XX-XX-XXXX.csv`.
+A sample result file is available in the root directory `2026-01-XX XX-XX-XXXX.csv`.
 
 - We load the results and check the top collexemes:
 
@@ -550,6 +567,21 @@ dist_results %>%
          title = "DISTINCTIVE COLLEXEMES")
 
 ```
+
+# Conclusion
+
+1. **Purpose of the tutorials**: This series aims to show the power of R in corpus processing, quantitative analysis. Its popularity continues to grow within corpus research.
+
+2. **Expectations about code**: You need not understand every line of code. Focus on overall logic, workflow, practical application.
+
+3. **Strengths of R**: R supports statistical analysis, text preprocessing, data visualization within one environment. This versatility makes it suitable for many corpus tasks.
+
+4. **Value of script templates**: The templates allow easy extension to more complex tasks through targeted modification of key parts.
+
+5. **Role of AI support**: AI assistance makes corpus analysis with R easier, reduces coding effort, lowers entry barriers.
+
+6. **Suggested learning approach**: Practice with templates, apply them to personal data, refine scripts through iterative experimentation.
+
 
 # References
 

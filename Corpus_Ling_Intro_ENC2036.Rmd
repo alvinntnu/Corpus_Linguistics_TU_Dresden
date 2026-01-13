@@ -24,8 +24,6 @@ knitr::opts_chunk$set(fig.width=8, fig.height=6, dpi=300, fig.retina=2, cols.pri
 ## If loading showtext throws errors, install: https://www.xquartz.org/
 library(showtext)
 showtext_auto(enable = TRUE)
-
-## rmarkdown::render("Corpus_Ling_Intro_ENC2036.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
 ```
 
 <p align="center">
@@ -40,7 +38,9 @@ showtext_auto(enable = TRUE)
 
 In this tutorial, I will demonstrate how to perform a basic corpus analysis after you have collected data. I will show you some of the most common ways that people work with the text data.
 
-# Installing `quanteda`
+# Environment Setting
+
+## Installing `quanteda`
 
 There are many packages that are made for computational text analytics in R. You may consult the [CRAN Task View: Natural Language Processing](https://cran.r-project.org/web/views/NaturalLanguageProcessing.html) for a lot more alternatives.
 
@@ -49,27 +49,44 @@ To start with, this tutorial will use a powerful package, `quanteda`, for managi
 `quanteda` is not included in the default R installation. Please install the package if you haven't done so.
 
 ```{r eval=F}
+## core
 install.packages("quanteda")
+## data, model, plotting
+install.packages("quanteda.textmodels")
+install.packages("quanteda.textstats")
+install.packages("quanteda.textplots")
+## loadding texts
 install.packages("readtext")
 ```
 
-Also, as noted on the `quanteda` documentation, because this library compiles some C++ and Fortran source code, you will need to have installed the appropriate compilers.
+
+:::{.alert}
+As noted on the `quanteda` documentation, because this library compiles some C++ and Fortran source code, you will need to have installed the appropriate compilers.
 
 -   If you are using a Windows platform, this means you will need also to install the [Rtools](https://cran.r-project.org/bin/windows/Rtools/) software available from CRAN.
 -   If you are using macOS, you should install the [macOS tools](https://cran.r-project.org/bin/macosx/tools/).
 
 If you run into any installation errors, please go to the official documentation page for additional assistance.
 
+:::
+
+
+## Loading Libraries
+
 ```{r}
 library(tidyverse)
 library(quanteda)
+library(quanteda.textplots)
+library(quanteda.textstats)
 library(readtext)
 library(tidytext)
 
 packageVersion("quanteda")
 ```
 
-# Building a `corpus` from character vector
+# Corpus Import
+
+## Building a `corpus` from character vector
 
 To demonstrate a typical corpus analytic example with texts, I will be using a pre-loaded corpus that comes with the `quanteda` package, `data_corpus_inaugural`. This is a corpus of US presidential inaugural address texts, and metadata for the corpus from 1789 to present.
 
@@ -84,7 +101,7 @@ We create a `corpus()` object with the pre-loaded `corpus` in `quanteda`-- `data
 corp_us <- corpus(data_corpus_inaugural) # save the `corpus` to a short obj name
 ```
 
-After the `corpus` is loaded, we can use `summary()` to get the metadata of each text in the corpus, including word types and tokens as well. This allows us to have a quick look at the size of the addressess made by all presidents.
+After the `corpus` is created, we can use `summary()` to get the metadata of each text in the corpus, including word types and tokens as well. This allows us to have a quick look at the size of the addressess made by all presidents.
 
 ```{r}
 summary(corp_us)
@@ -117,7 +134,7 @@ corp_us %>%
 
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Could you reproduce the above line plot and add information of `President` to the plot as labels of the dots?
   
 Hints: Please check `ggplot2::geom_text()` or more advanced one, `ggrepel::geom_text_repel()`
@@ -137,12 +154,29 @@ corp_us %>%
 
 ```
 
-:::{.info}
-So the idea is that as long as you can load the text data into a character vector, you can easily create an `corpus` object with `quanteda::corpus()`.
+## Loading Own Corpus
 
-The library `readtext` provides a very effective function `readtext()` for you to load text data from external files. Please check its documentation for more effective usages.
+* Core idea
 
-For example, if you have downloaded the file `gutenberg.zip` and stored it in `demo_data`, you can load in the `gutenberg` corpus as follows:
+  * Once you load text data into a character vector, you can create a `corpus` object directly with `quanteda::corpus()`.
+  * This workflow keeps data handling simple and transparent.
+
+* Loading external text data
+
+  * The package `readtext` provides the function `readtext()` for importing text files.
+  * The function supports many file formats and scales well to larger collections.
+  * Consult the package documentation for extended usage and advanced options.
+
+* Typical data organization
+
+  * Researchers usually store all text files inside a single directory.
+  * `readtext()` can import an entire directory in one step, which simplifies corpus construction.
+
+* Example workflow
+
+  * The file `gutenberg.zip` in the `demo_data` directory contains documents from Project Gutenberg.
+  * The following code shows a complete workflow from import to corpus summary:
+
 
 ```{r}
 gutenberg <- readtext(file = "demo_data/gutenberg.zip")
@@ -150,19 +184,33 @@ gutenberg_corp <- corpus(gutenberg)
 summary(gutenberg_corp)
 ```
 
-:::
 
-------------------------------------------------------------------------
+* Interpretation
+
+  * `readtext()` reads the files into a structured text object.
+  * `corpus()` converts this object into a quanteda corpus.
+  * `summary()` provides a quick overview of documents, tokens, metadata.
+
+
+# Tokenization
+
+The first step for most textual analyses is usually tokenization, i.e., breaking each long text into word tokens for linguistic analysis. 
+
+```{r}
+corp_us_tokens <- tokens(corp_us)
+corp_us_tokens[1]
+```
+
 
 # Keyword-in-Context (KWIC)
+
+## KWIC
 
 Keyword-in-Context (KWIC), or *concordances*, are the most frequently used method in corpus linguistics. The idea is very intuitive: we get to know more about the semantics of a word by examining how it is being used in a wider context.
 
 We first tokenize the corpus using `tokens()` and then we can use `kwic()` to perform a search for a word and retrieve its concordances from the corpus:
 
 ```{r}
-## word tokenization
-corp_us_tokens <- tokens(corp_us)
 ## concordances
 kwic(corp_us_tokens, "terror")
 ```
@@ -175,7 +223,7 @@ Please note that `kwic()`, when taking a `corpus` object as the argument, will a
 The pattern you look for cannot be a linguistic pattern across several words. We will talk about how to extract phrasal patterns/constructions later. Also, for languages without explicit word boundaries (e.g., Chinese), this may be a problem with `quanteda`. We will talk more about this in the later chapter on Chinese Texts Analytics.
 :::
 
-# KWIC with Regular Expressions
+## KWIC with Regular Expressions
 
 For more complex searches, we can use regular expressions as well in `kwic()`. For example, if you want to include `terror` and all its other related word forms, such as `terrorist`, `terrorism`, `terrors`, you can create a regular expression for the concordances.
 
@@ -217,7 +265,7 @@ kwic(corp_us_tokens,
 
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Please create a bar plot, showing the number of uses of the word *country* in each president's address. Please include different variants of the word, e.g., *countries*, *Countries*, *Country*, in your `kwic()` search.
 :::
 
@@ -231,30 +279,68 @@ kwic(corp_us_tokens, "^[Cc]ountr(y|(ies))$", valuetype = "regex") %>%
   theme(axis.text.x = element_text(angle=90))
 ```
 
+
+## Lexical Density Plot
+
+Plotting a `kwic` object produces a lexical dispersion plot, which allows us to visualize the occurrences of particular terms throughout the texts.
+
+```{r out.width="100%"}
+corp_us_tokens %>%
+  tokens_subset(Year > 1949) %>%
+  kwic(pattern= "american") %>%
+  textplot_xray()
+```
+
+```{r fig.width= 10, fig.height = 8}
+## subset the corpus
+corp_us_subset <- corp_us_tokens %>%
+  tokens_subset(Year > 1949)
+
+## Plotting
+textplot_xray(kwic(corp_us_subset, pattern = "american"),
+              kwic(corp_us_subset, pattern = "people")) +
+  aes(color = keyword) + scale_color_manual(values = c('lightpink', 'royalblue'))
+```
+
+
 ------------------------------------------------------------------------
 
 # Tidy Text Format of the Corpus
 
-So far our corpus is a `corpus` object defined in `quanteda`. In most of the R standard packages, people normally follow the **using tidy data principles** to make handling data easier and more effective.
+
+* Current data format
+
+  * Our corpus exists as a `corpus` object defined in `quanteda`.
+  * Many R packages follow **tidy data principles** because this structure supports clearer, more efficient data handling.
 
 :::{.info}
-As described by Hadley Wickham [@hadley2017], tidy data has a specific structure:
+* Tidy data principles [@hadley2017]
 
--   Each variable is a column
--   Each observation is a row
--   Each type of observational unit is a table
+  * Each variable appears in one column.
+  * Each observation appears in one row.
+  * Each type of observational unit forms one table.
 :::
 
-Essentially, it is an idea of making an abstract object (i.e., `corpus`) a more intuitive data structure, i.e., a `data.frame`, which is easier for human readers to work with.
+* Why this matters for corpus work
 
-With text data like a `corpus`, we can also define the **tidy text format** as being a `data.frame` with one-token-per-row.
+  * A `corpus` represents an abstract object.
+  * A `data.frame` provides a more intuitive structure for human readers.
+  * Converting a corpus into a tidy `data.frame` supports inspection, transformation, analysis.
 
--   A **token** can be any meaningful unit of the text, such as a word that we are interested in using for analysis, and **tokenization** is the process of splitting text into tokens.
--   In computational text analytics, the token (i.e., each row in the data frame) is most often a single *word*, but can also be an *n-gram*, a *sentence*, or a *paragraph*.
+* Tidy text format
 
-The `tidytext` package in R is made for the handling of the tidy text format of the corpus data. With a tidy data format of the corpus, we can manipulate the text data with a standard set of *tidy* tools and packages, including `dplyr`, `tidyr`, and `ggplot2`.
+  * Tidy text represents text data as a `data.frame` with one token per row.
+  * A **token** refers to a meaningful unit of text used for analysis (e.g., words, sentences, paragraphs, documents)
+  * **Tokenization** refers to the process of splitting text into tokens.
+  * In computational text analysis, a token often corresponds to a single word.
+  * Tokens can also represent n-grams, sentences, paragraphs.
 
-The `tidytext` package includes a function, `tidy()`, to convert the `corpus` object from `quanteda` into a **document/text-based** `data.frame`.
+* Working with tidy text in R
+
+  * The `tidytext` package supports tidy text representations of corpus data.
+  * With tidy text, you can use a shared ecosystem of tools such as `dplyr`, `tidyr`, `ggplot2` for data manipulation and visualization.
+  * The function `tidy()` in `tidytext` converts a `quanteda` `corpus` into a document-based `data.frame`.
+
 
 ```{r}
 library(tidytext)
@@ -270,7 +356,7 @@ corp_us_tidy %>%
 
 # Processing Flowchart
 
-```{r engpipe, purl= F, echo=F, out.width="90%", fig.cap = "Computational Text Processing Flowchart"}
+```{r engpipe, purl= F, echo=F, out.width="90%", out.height="760px", fig.cap = "Computational Text Processing Flowchart"}
 # Documentation: http://rich-iannone.github.io/DiagrammeR/graphviz_and_mermaid.html
 DiagrammeR::grViz("digraph {
   
@@ -291,9 +377,9 @@ b5[label = 'Data Frame (Summary)', shape = folder, fillcolor= '#B0E2FC']
 
 b7[label = 'Data Frame (KWIC)', shape = folder, fillcolor= '#B0E2FC']
 
-c [label = 'TIBBLE object (text-based)', shape = folder, fillcolor= '#B0E2FC']
+c [label = 'Data Frame (doc-based)', shape = folder, fillcolor= '#B0E2FC']
 c1 [label = 'tidytext::unnest_tokens()', shape=document, fillcolor= '#96F597']
-d [label = 'TIBBLE object (token-based)', shape = folder, fillcolor= '#B0E2FC']
+d [label = 'Data Frame(token-based)', shape = folder, fillcolor= '#B0E2FC']
 d1 [label = 'dplyr', shape=document, fillcolor= '#96F597']
 e [label = 'Word Frequency', shape = folder, fillcolor= '#B0E2FC']
 f [label = 'N-gram Freuency', shape = folder, fillcolor= '#B0E2FC']
@@ -314,40 +400,64 @@ f->h
 flow_chart
 ```
 
+
 # Frequency Lists
 
 ## Word (Unigram)
 
-To get a frequency list of words, word tokenization is an important step for corpus analysis because words are a meaningful linguistic unit in language. Also, word frequency lists are often indicative of many important messages (e.g., the semantics of the documents).
+* Why tokenization matters
 
-The `tidytext` provides a powerful function, `unnest_tokens()` to tokenize a data frame with larger linguistic units (e.g., *texts*) into one with smaller units (e.g., *words*). That is, the `unnest_tokens()` convert a **text-based** data frame (each row is a text document) into a **token-based** data frame(each row is a token splitted from the text).
+  * Word tokenization plays a central role in corpus analysis.
+  * Words function as meaningful linguistic units.
+  * Word frequency lists often signal key patterns, themes, semantic tendencies within documents.
+
+* From text-based data to token-based data
+
+  * The `tidytext` package offers the function `unnest_tokens()` for tokenization.
+  * This function transforms a **text-based** data frame, each row as one document, into a **token-based** data frame, each row as one token.
+  * This transformation supports fine-grained analysis such as frequency counts, collocation patterns, distributional analysis.
 
 ```{r}
 corp_us_words <- corp_us_tidy %>%
-  unnest_tokens(output = word, # new base unit column name
-                input = text,  # original base unit column name
+  unnest_tokens(output = word,  # new unit column
+                input = text,   # original text column
                 token = "words") # tokenization method
 
 corp_us_words
 ```
 
-:::{.info}
-The `unnest_tokens()` is optimized for English tokenization of smaller linguistic units, such as *words*, *ngrams*, *sentences*, *lines*, and *paragraphs* (check `?unnest_tokens()`). 
-:::
+* Practical scope of `unnest_tokens()`
 
-:::{.alert}
-Please note that by default, `token = "words"` would normalize the texts to lower-casing letters. Also, all the non-word tokens are automatically removed. If you would like to preserve the casing differences and the punctuations, you can include the following arguments in `unnest_tokens(..., token = "words", strip_punct = F, strip_numeric = F)`.
-:::
+  * The function supports tokenization for English across several unit types.
+  * Common options include words, ngrams, sentences, lines, paragraphs.
+  * The help page `?unnest_tokens()` lists available settings.
 
-Now we can count the word frequencies by making use of the `dplyr` library:
+* Important default behavior
+
+  * `token = "words"` converts all text to lower case.
+  * The function removes punctuation marks, numeric strings by default.
+  * To preserve case, punctuation, numbers, specify extra arguments.
+
+```r
+unnest_tokens(..., token = "words", strip_punct = FALSE, strip_numeric = FALSE)
+```
+
+* Creating a word frequency list
+
+  * The `dplyr` package provides the function `count()` for frequency calculation.
+  * The following code counts word frequencies, then sorts results from high to low.
 
 ```{r}
 corp_us_words_freq <- corp_us_words %>%
   count(word, sort = TRUE)
 
-
 corp_us_words_freq
 ```
+
+
+:::{.info}
+The `unnest_tokens()` is optimized for English tokenization of smaller linguistic units, such as *words*, *ngrams*, *sentences*, *lines*, and *paragraphs* (check `?unnest_tokens()`). 
+:::
 
 ## Bigrams
 
@@ -377,7 +487,7 @@ sum(corp_us_bigrams_freq$n) # size of bigrams
 ```
 
 
-:::{.exercise}
+:::{.practice}
 Based on the bigram-based data frame, how can we create a frequency list showing each president's uses of bigrams with the first-person plural pronoun **we** as the first word. 
 
 In the output, please present the most frequently used bigram in each presential addresss only. If there are ties, present all of them. 
@@ -402,7 +512,7 @@ corp_us_bigrams %>%
 
 ```
 
-:::{.exercise}
+:::{.practice}
 The function `unnest_tokens()` does a lot of work behind the scene. Please take a closer look at the outputs of `unnest_tokens()` and examine how it takes care of the **case normalization** and **punctuations** within the sentence. Will these treatments affect the frequency lists we get in any important way? Please elaborate.
 :::
 
@@ -458,7 +568,7 @@ corp_us_trigrams %>%
 
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Please subset the top 3 trigrams of President Don. Trump, Bill Clinton, John Adams, from `corp_us_trigram`.
 :::
 
@@ -473,22 +583,18 @@ corp_us_trigrams %>%
 
 ------------------------------------------------------------------------
 
-# Frequency and Dispersion
+## Frequency and Dispersion
 
-When looking at frequency lists, there is another distributional metric we need to consider: **dispersion**.
+When you examine frequency lists, another distributional metric deserves attention: **dispersion**. Dispersion captures how widely a form spreads across texts rather than how often it appears overall.
 
-An n-gram can be meaningful if its frequency is high. However, this high frequency may come in different meanings. What if the n-gram only occurs in ONE particular document, i.e., used only by a particular President? Or alternatively, what if the n-gram appears in many different documents, i.e., used by many different Presidents?
+An n-gram with high frequency can reflect very different usage patterns. A form may appear many times within a single document, used by one particular President. The same frequency may instead reflect broad use across many documents, used by many Presidents. These two scenarios carry very different interpretive weight. Frequency gains significance when it co-occurs with wide dispersion.
 
-The degrees of n-gram dispersion has a lot to do with the significance of its frequency.
-
-So now let's compute the `dispersion` of the n-grams in our `corp_us_trigrams`. Here we define the `dispersion` of an n-gram as the number of Presidents who have used the n-gram at least once in his address(es).
-
+For this reason, we now compute the `dispersion` of n-grams in `corp_us_trigrams`. Here, dispersion refers to the number of Presidents who used a given n-gram at least once in their address(es).
 
 :::{.info}
-
-Dispersion is an important construct and many more sophisticated quantitative metrics have been proposed to more properly operationalize this concept. Please see @gries2021a.
-
+Dispersion represents a central concept in corpus analysis. Researchers have proposed more refined quantitative measures to operationalize this construct. See @gries2021a for an overview.
 :::
+
 
 ```{r}
 # method 1
@@ -518,7 +624,7 @@ In particular, cut-off values are often used to determine a list of meaningful n
 
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Please create a list of four-word lexical bundles that have been used in at least FIVE different **presidential addressess**. Arrange the resulting data frame according to the frequency of the four-grams.
 :::
 
@@ -545,7 +651,7 @@ corp_us_4grams %>%
 
 ------------------------------------------------------------------------
 
-# Word Cloud
+## Word Cloud
 
 With frequency data, we can visualize important words in the corpus with a **Word Cloud**. It is a novel but intuitive visual representation of text data. It allows us to quickly perceive the most prominent words from a large collection of texts.
 
@@ -562,7 +668,7 @@ with(corp_us_words_freq, wordcloud(word, n,
 
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Word cloud would be more informative if we first remove functional words. In `tidytext`, there is a preloaded data frame, `stop_words`, which contains common English stop words. Please make use of this data frame and try to re-create a word cloud with all stopwords removed. (Criteria: Frequency >= 20; Max Number of Words Plotted = 400)
 
 
@@ -587,8 +693,8 @@ corp_us_words_freq %>%
                  vfont=c("serif","plain")))
 ```
 
-:::{.exercise}
-Get yourself familiar with another R package for creating word clouds, `wordcloud2`, and re-create a word cloud as requested in Exercise \@ref(exr:wordcloud1) but in a fancier format, i.e., a star-shaped one. (Criteria: Frequency >= 20; Max Number of Words Plotted = 400)
+:::{.practice}
+Get yourself familiar with another R package for creating word clouds, `wordcloud2`, and re-create a word cloud as requested in previous exercise but in a fancier format, i.e., a star-shaped one. (Criteria: Frequency >= 20; Max Number of Words Plotted = 400)
 :::
 
 ```{r echo=F, eval=F, out.width="100%", out.height="100%"}
@@ -615,7 +721,7 @@ With unigram and bigram frequencies of the corpus, we can further examine the co
 
 ## Cooccurrence Table and Observed Frequencies
 
-Cooccurrence frequency data for a word pair, *w~1~* and *w~2~*, are often organized in a contingency table extracted from a corpus, as shown in Figure \@ref(fig:collo1).
+Cooccurrence frequency data for a word pair, *w~1~* and *w~2~*, are often organized in a contingency table extracted from a corpus, as shown below.
 
 The cell counts of this contingency table are referred to as the **observed** frequencies *O~11~*, *O~12~*, *O~21~*, and *O~22~*.
 
@@ -646,7 +752,7 @@ Therefore, equations for different association measures (i.e., mutual informatio
 Please see Stefan Evert's [Computational Approaches to Collocation](http://www.collocations.de/AM/index.html) for a very detailed and comprehensive comparison of various statistical methods for lexical association.
 :::
 
-The expected frequencies can be computed from the marginal frequencies as shown in Figure \@ref(fig:collo2).
+The expected frequencies can be computed from the marginal frequencies as shown below.
 
 ------------------------------------------------------------------------
 
@@ -681,7 +787,7 @@ example <- matrix(c(90, 10, 110, 290), byrow=T, nrow=2)
 ```
 
 
-:::{.exercise}
+:::{.practice}
 Please compute the expected frequencies for the above matrix `example` in R.
 :::
 
@@ -702,7 +808,7 @@ options(scipen=99999)
 
 The idea of lexical assoication is to measure how much the observed frequencies deviate from the expected. Some of the metrics (e.g., *t-statistic*, *MI*) consider only the joint frequency deviation (i.e., *O~11~*), while others (e.g., *G^2^*, a.k.a Log Likelihood Ratio) consider the deviations of ALL cells.
 
-Here I would like to show you how we can compute the most common two asssociation metrics for all the bigrams found in the corpus: **t-test** statistic and **Mutual Information** (MI).
+Here I would like to show you how we can compute the two old-school association metrics for all two-word combinations found in the corpus: **t-test** statistic and **Mutual Information** (MI).
 
 -   $t = \frac{O_{11}-E_{11}}{\sqrt{O_{11}}}$
 -   $MI = log_2\frac{O_{11}}{E_{11}}$
@@ -749,9 +855,11 @@ While the operationalization of co-occurrence may lead to different *w~1~* and *
 
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Sort the collocation data frame `corp_us_collocations` according to the `t-score` and compare the results sorted by `MI` scores. Please describe the differences between the bigram collocations found with both metrics (i.e., MI and t-score).
 :::
+
+* Collocations sorted by t-score:
 
 ```{r eval = T, echo = F}
 corp_us_collocations %>%
@@ -759,9 +867,17 @@ corp_us_collocations %>%
   filter(O11 > 5)
 ```
 
+* Collocations sorted by MI values:
+
+```{r eval = T, echo = F}
+corp_us_collocations %>%
+  arrange(desc(MI)) %>%
+  filter(O11 > 5)
+```
+
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Based on the formula provided above, please create a new column for `corp_us_collocations`, which gives the Log-Likelihood Ratios of all the bigrams.
 :::
 
@@ -806,7 +922,7 @@ corp_us_collocations %>%
 
 
 
-:::{.exercise}
+:::{.practice}
 
 (A) Find the top FIVE bigrams ranked according to MI values for each president. The result would be a data frame as shown below. (Please remove bigrams whose frequency < 5 from before ranking.)
 
@@ -879,18 +995,6 @@ corp_us_collocations_president %>%
 ```
 
 
-:::{.alert}
-Please note that when you compute the bigram's collocation strength, their MI values should be same across different presidential addressess. A quick way to check the accuracy of your numbers is to look at the same bigram used in different presidential addresses and see if it has the same MI values.
-
-```{r echo=F}
-corp_us_collocations_president %>%
-  filter(str_detect(bigram, "domestic concerns")) ->temp
-temp
-```
-For example, the above table shows that while in "`r temp$Year_President[1]`", there was only one token of the bigram *`r temp$bigram[1]`*, the bigram occurred **`r temp$O11[1]`** times in the entire corpus.
-
-:::
-
 # Constructions
 
 We are often interested in the use of linguistic patterns, which are beyond the lexical boundaries. My experience is that usually it is better to work with the corpus on a sentential level.
@@ -916,8 +1020,8 @@ require(stringr)
 # Perfect
 corp_us_sents %>%
   unnest_tokens(
-    perfect,   ## nested unit
-    sentence,  ## superordinate unit
+    output = perfect,   ## nested unit
+    input = sentence,  ## superordinate unit
     token = function(x)
       str_extract_all(x, "ha(d|ve|s) \\w+(en|ed)")
   ) -> result_perfect
@@ -932,7 +1036,6 @@ The idea of tokenization in `unnest_tokens()` is that the `token` argument can b
 In our demonstration, we define a tokenization function, which takes `sentence` as the input and returns a list, each element of which consists a vector of tokens matching the regular expressions in individual sentences in `sentence`. 
 
 (Note: The function object is not assigned to an object name, thus never being created in the R working session.)
-:::
 
 ------------------------------------------------------------------------
 
@@ -941,6 +1044,9 @@ knitr::include_graphics("images/unnest-tokens.png")
 ```
 
 ------------------------------------------------------------------------
+
+:::
+
 
 And of course we can do an exploratory analysis of the frequencies of Perfect constructions by different presidents:
 
@@ -971,17 +1077,17 @@ There are quite a few things we need to take care of more thoroughly:
 
 Any ideas how to solve all these issues? The following exercises will be devoted to these two important issues.
 
-:::{.exercise}
+:::{.practice}
 Please create a better regular expression to retrieve more tokens of English Perfect constructions, where the auxilliary and participle may not stand together.
 :::
 
 ```{r eval=T, echo = F, out.width="90%"}
-str_view_all(corp_us_tidy$text[3] %>% str_sub(1,8000),"ha(d|ve|s) (\\w+ ){1,3}\\w+(en|ed)")
+str_view_all(corp_us_sents$sentence ,"ha(d|ve|s) (\\w+ ){1,3}\\w+(en|ed)", html=T)
 ```
 
 ------------------------------------------------------------------------
 
-:::{.exercise}
+:::{.practice}
 Re-generate a `result_perfect` data frame, where you can keep track of:
   
   - From the *N*-th sentence of the address did the Perfect come? (e.g., `SENT_ID` column below)
@@ -1004,7 +1110,7 @@ corp_us_tidy %>%
   result_perfect2
 ```
 
-:::{.exercise}
+:::{.practice}
 Re-create the above bar plot in a way that the type and token frequencies are computed based on each address and the x axis should be arranged accordingly (i.e., by the years and presidents). Your resulting graph should look similar to the one below.
 :::
 
@@ -1034,3 +1140,35 @@ sents %>%
   unlist %>%
   unique
 ```
+
+# Keyness Analysis
+
+When you have two collections of texts, we can use quantitative methods to identify which words are more strongly associated with one of the two sub-corpora. This is the idea of **keyword analysis**.
+
+```{r echo=T, out.width="100%", fig.width = 10, fig.height = 12}
+# Only select speeches by Obama and Trump
+pres_corpus <- corpus_subset(corp_us,
+                            President %in% c("Trump", "Biden"))
+
+# Create a dfm grouped by president
+pres_dfm <- pres_corpus %>%
+  tokens(remove_punct = T,
+         remove_numbers= T,
+         remove_symbols = T) %>%
+  tokens_remove(stopwords("en")) %>%
+  tokens_group(groups = President) %>%
+  dfm(tolower=F) 
+
+# Calculate keyness and determine Trump as target group
+result_keyness <- textstat_keyness(pres_dfm, 
+                                   target = "Biden",
+                                   measure = "lr")
+
+# Plot estimated word keyness
+textplot_keyness(result_keyness,
+                 color = c("red", "blue"), 
+                 n = 30)
+```
+
+
+# References

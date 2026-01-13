@@ -25,8 +25,6 @@ knitr::opts_chunk$set(fig.width=8, fig.height=6, dpi=300, fig.retina=2, cols.pri
 library(showtext)
 showtext_auto(enable = TRUE)
 
-library(prettydoc)
-## rmarkdown::render("r-fundamentals.Rmd", html_pretty(theme="leonids", highlight="github", toc=T, number_sections=T, df_print="paged",css="static/style.css"), output_dir = "docs")
 ```
 
 <p align="center">
@@ -36,12 +34,14 @@ library(prettydoc)
 </p>
 
 
-# R Fundamentals {#r-fundamentals}
+# R Fundamentals: Environment Setting {#r-fundamentals}
 
 - Download R: [R-Project](https://cloud.r-project.org) 
 - IDE: [RStudio](https://www.rstudio.com/products/rstudio) 
 
-# Installing R
+
+
+## Installing R
 
 Download the installation file: [http://cran.r-project.org](https://cloud.r-project.org)
 
@@ -49,7 +49,7 @@ Download the installation file: [http://cran.r-project.org](https://cloud.r-proj
 ![](images/Rinstall.png)
  
 
-# Installing RStudio
+## Installing RStudio
 
 After you install R, you may install RStudio. RStudio is an editor which can help you write R codes. A good analogy is that R is the engine and Rstudio is the dashboard of the car.
 
@@ -71,21 +71,21 @@ knitr::include_graphics("images/Rstudio_install.png")
 
 :::{.alert}
 - Important notes:
-  - Do not have Chinese characters in your directory names or on the path to the files
+  - Do not have non-alphanumeric characters in your directory names or on the path to the files.
   - Do not have spaces and weird symbols in your file path:
     - `D:/R`
     - `D:/Rstudio`
     - `/User/Alvinchen/`
 :::
 
-# My Current Version
+## My Current Version
 
 
 ```{r}
 sessionInfo()
 ```
 
-# The Interface of Rstudio
+## The Interface of Rstudio {#the-interface-of-rstudio}
 
 When you start Rstudio, you will see an interface as follows:
 
@@ -98,9 +98,9 @@ knitr::include_graphics("images/Rstudio_interface.png")
   - Console: This is the R engine, which runs the codes we send out either from the R-script file or directly from the console input
   - Output: You can view graphic outputs here
   
-  ***
+# R Language Basics
 
-The R console is like a calculator. You can type any R code in the console after the prompt `>` and run the code line by line by pressing `enter`.
+The R console is like a calculator (a lot more powerful of course). You can type any R code in the console after the prompt `>` and run the code line by line by pressing `enter`.
 
 ```{r echo = T, message = T, warning = T, collapse = F}
 1 + 1
@@ -114,8 +114,8 @@ Or alternatively, we can create an R script in Rstudio and write down lines of R
 
 In the above example (Figure \@ref(fig:rstudiointerface)), I wrote a few lines of codes in a R script file (cf. the `Editor` frame) and asked R to run these lines of codes in the R `Console`. And the graphic output of the R script was printed in the `Output` frame.
 
-:::{.exercise}
-Please create a new R script in Rstudio. You may name the script as "ch-2-NAME.R" (Please use your own name). Please write the following codes in the script and pass the whole script to the R Console.
+:::{.practice}
+Please create a new R script in Rstudio. You may name the script as "my-first-R-script.R".Write the following codes in the script and pass the whole script to the R Console.
 :::
 
 ```{r eval=F , purl=F}
@@ -125,7 +125,7 @@ hist(scores)
 boxplot(scores)
 ```
 
-:::{.exercise}
+:::{.practice}
 Find the answer to the following mathematical calculation with R.
 :::
 
@@ -138,6 +138,8 @@ print(ans)
 $2^{2+1}-4+64^{(-2)^{2.25-\frac{1}{4}}}$
 
 = 16777220
+
+
 
 ## Assignment
 
@@ -160,7 +162,7 @@ print(y)
 ```
 
 
-# Data Structure
+## Data Structure
 
 In R, the most primitive object is a **vector**. There are three types of primitive vectors: (a) numeric, (b) character, and (c) Boolean vectors. In our previous examples, `x` is a numeric vector of one element; `y` is a character vector of one element. The following code shows an example of a Boolean vector `z`. 
 
@@ -209,15 +211,19 @@ ex_df <- data.frame(
 ex_df
 ```
 
-The following graph shows you an intuitive understanding of the data structures in R. We will discuss more on data structures in Chapter \@ref(subsetting).
+The following graph shows you an intuitive understanding of the data structures in R.
 
 ```{r echo=F, out.width="90%" , purl=F}
 knitr::include_graphics("images/r-data-structure.png")
 ```
 
-# Function
+## Function
 
 Function is also an object class. There are many functions pre-defined in the R-base libraries. 
+
+```{r}
+x2 <- c(1, 2, 3, 4, 5, 6)
+```
 
 ```{r }
 class(c)
@@ -257,7 +263,7 @@ print_out_user_name(name = "Alvin Cheng-Hsien Chen")
 print_out_user_name(name = "Ada Lovelace")
 ```
 
-:::{.exercise}
+:::{.practice}
 Please define a function called `make_students_happy()`, which takes a multi-element numeric vector, and returns also a numeric vector, with the value of each element to be the square root of the original value multiplied by 10.
 :::
 
@@ -272,7 +278,7 @@ student_current_scores <- c(20, 34, 60, 87, 100)
 make_students_happy(old_scores = student_current_scores)
 ```
 
-# Vectorization
+## Vectorization
 
 Many operations in R are vectorized, meaning that operations occur in parallel in certain R objects. This allows you to write code that is efficient, concise, and easier to read than in non-vectorized languages.
 
@@ -306,7 +312,7 @@ y == 8
 ```
 
 
-# Script
+## Script
 
 In our earlier demonstrations, we ran R codes by entering each procedure line by line. We can create one script file with the Editor of Rstudio and include all our R codes in the file, which usually has the file extension of `.R`. And then we can run all commands included in the whole script all at once in the Rstudio (i.e., sending everything in the script file to the R console).
 
@@ -316,7 +322,18 @@ First you open the `*.R` script file in Rstudio, which should appear in the Edit
 knitr::include_graphics("images/Rstudio_editor.png")
 ```
 
-# Library
+
+## Setting
+
+Always set your default encoding of the files to UTF-8:
+
+```{r echo=F, out.width="120%", purl=F}
+knitr::include_graphics("images/Rstudio_utf8.png")
+```
+
+# Resources
+
+## Library
 
 R, like other programming languages, comes with a huge database of packages and extensions, allowing us to do many different tasks without worrying about writing the codes all from the scratch. In [CRAN Task Views](https://cran.r-project.org/web/views/), you can find specific packages that you need for particular topics/tasks.
 
@@ -351,19 +368,15 @@ However, for the other packages, I would still recommend you to install the pack
 :::
 
 
-# Setting
 
-Always set your default encoding of the files to UTF-8:
+## Seeking Help
 
-```{r echo=F, out.wdith = "100%" , purl=F}
-knitr::include_graphics("images/Rstudio_utf8.png")
-```
+* Learning programming often brings moments of frustration. Useful sources can ease the process.
 
-# Seeking Help
+* Getting help inside RStudio
 
-In the process of (learning) programming, one thing you will never be able to dodge is feeling desperate for help. Here are some useful sources from which you may get additional assistance.
-
-Within Rstudio, in the R console, you can always use `?` to check the documentation of a particular function (cf. Figure \@ref(fig:help1)). When you run the command, you will see the documentation popping up in the output frame of the Rstudio.
+  * Use `?` in the R console to open function documentation.
+  * The help page appears in the output pane.
 
 ```{r eval=F}
 ?log
@@ -374,23 +387,37 @@ Within Rstudio, in the R console, you can always use `?` to check the documentat
 knitr::include_graphics("images/Rstudio_help.png")
 ```
  
-If you need help from others, the first step is to create a **reproducible example**. The goal of a **reproducible example** is to package your problematic code in such a way that other people can run it and feel your pain. Then, hopefully, they can provide a solution and put you out of your misery.
+* Asking others for help
+
+  * Start with a **reproducible example**.
+  * The goal involves packaging your problematic code so others can run it, observe the issue, propose a solution.
 
 ```{r help2, echo = F, out.width= "80%", fig.cap="Help 2" , purl=F}
 knitr::include_graphics("images/help.png")
 ```
 
-So  before you seek help from others (or before you yell at others for help, cf. Figure \@ref(fig:help2)) :
+* Before seeking help
 
-- First, you need to make your code reproducible. This means that you need to capture everything, i.e., include any library() calls and create all necessary objects (e.g., files). The easiest way is to check the objects listed in the `Environment` tab of the Rstudio and identify objects that are relevant to your problematic code chunk.
+  * Make your code reproducible.
 
-- Second, you need to make it minimal. Strip away everything that is not directly related to your problem. This usually involves creating a much smaller and simpler R object than the one you’re facing in real life or even using built-in data.
+    * Capture everything.
+    * Include all `library()` calls.
+    * Create every required object.
+    * Check the `Environment` tab in RStudio.
+    * Identify objects linked to your problematic code.
+  * Make it minimal.
 
-That sounds like a lot of work! And it can be, but it has a great payoff:
+    * Remove anything unrelated to the problem.
+    * Build a smaller object.
+    * Use built-in data when possible.
 
-80% of the time creating an excellent reproducible example reveals the source of your problem. It’s amazing how often the process of writing up a self-contained and minimal example allows you to answer your own question.
+* Why this effort matters
 
-The other 20% of time you will have captured the essence of your problem in a way that is easy for others to play with. This substantially improves your chances of getting help! 
+  * In many cases, the process itself reveals the source of the problem.
+  * In remaining cases, a clear, compact example helps others test quickly.
+  * This greatly improves your chance of receiving useful help.
+
+***
 
 The following is a list of resources where people usually get external assistance quickly:
  
@@ -407,38 +434,50 @@ The following is a list of resources where people usually get external assistanc
   - stackoverflow: <https://stackoverflow.com/questions/tagged/r>
   - rstudio: <https://community.rstudio.com/>
 
-# Language Learning Ain't Easy!
+## Language Learning Ain't Easy!
 
 ```{r echo=F,  out.width = "80%" , purl=F}
 knitr::include_graphics("images/panic.jpg")
 ```
 
-Learning R is like learning another foreign language. It is a long journey. You can't expect yourself to learn all the vocabulary of the new language in one day. Also, you will forget things you learn all the time. Everyone's been there. When your script does not work as expected, don't be frustrated. Take a break and resume later. What I can say is that: it is always **NORMAL** to debug a script for hours or even days via endless searches on Google.
+* Learning R resembles learning a foreign language. Progress takes time. You cannot master all vocabulary in one day. Forgetting happens often. Everyone experiences this. When a script fails, avoid frustration. Take a break. Return later. Long debugging sessions with heavy Google searching remain normal.
 
-That being said, here I would like to share with you some of the most common problems we may run into:
+* Common problems many learners face
 
-- You created an R script file (`*.r`) and opened it in the Rstudio, but the script didn't work simply because you didn't execute the script in R console (i.e., you didn't send the script to R console.)
-- If you get an error message, saying `"object not found"`, check the object name again and see if you have mistyped the name of the object. If not, check your current environment and see if you have forgot to execute some assignment commands in the previous parts of the script (i.e., the object has NOT even been created yet).
-- If you get an error message, saying `"function not found"`, check the function and see if you have the correct name. Or more often, check if you have properly **loaded** the necessary libraries where the function is defined.
-- To understand the meaning of the error messages is crucial to your development of R proficiency. To achieve this, you have to know very well every object name you have created in your script (as well as in your environment). For example:
+  * You created an R script file (`*.r`) in RStudio. The script failed because you did not send code to the R console.
+  * Error message `"object not found"`
 
-  * What type of object is it? (i.e., the `class` of the object, e.g., `vector`, `list`, `data.frame`?)
-  * For primitive vectors, what data type does the vector belong to? (e.g., `numeric`, `character`, `boolean`,`factor`?)
-  * What is the dimensionality of the object? (`nrows`, `ncols`?)
+    * Check spelling of the object name.
+    * Check the current environment.
+    * Confirm execution of earlier assignment commands. The object may not exist yet.
+  * Error message `"function not found"`
 
-- Sometimes the script fails simply because of the obvious syntactic errors. Pay attention to all the **punctuations** in every R command. They are far more important (or *lethal*) than you think. They include:
+    * Check the function name.
+    * Confirm that the required package loaded with `library()`.
+  * Understanding error messages builds proficiency
+
+    * Know each object you create in the script plus the environment.
+    * Ask key questions about each object
+
+      * What is the object class? `vector`, `list`, `data.frame`.
+      * What data type does a primitive vector contain? `numeric`, `character`, `logical`, `factor`.
+      * What dimensions define the object? `nrow`, `ncol`.
+  * Many failures come from simple syntax issues
+
+    * Pay close attention to punctuation. Small marks carry large impact.
+
+      * `,` commas separate function arguments
+      * `"` quotes mark strings
+      * `()` parentheses define function calls
+      * `{}` braces structure control flow
+  * Around 80% of errors reduce to typos. Copy–paste helps.
+  * Never assume your script works as intended
+
+    * Did R produce the intended result?
+    * What content sits inside each object name?
+
   
-  * `,`: commas between arguments inside a function
-  * `"`: quotes for strings/characters
-  * `()`: parentheses for functions
-  * `{}`: curly brackets for control structures
-  
-- From my experiences, about 80 percent of the errors may in the end boil down to a simple *typo*. No kidding. Copy-and-paste helps.
-- *DO NOT* assume that your R script always works as intended! Always keep two questions in mind:
-  * Did R produce the intended result?
-  * What is included in the R object name?
-  
-# Keyboard Shortcuts
+## Keyboard Shortcuts
 
 The best way to talk to a computer is via the keyboard. Scripting requires a lot of typing. Keyboard shortcuts may save you a lot of time. Here are some of the handy shortcuts:
 
@@ -458,7 +497,7 @@ The best way to talk to a computer is via the keyboard. Scripting requires a lot
 
 ***
 
-:::{.exercise}
+:::{.practice}
 Make yourself familiar with the `iris` data set, which is included in R.
 :::
 
@@ -468,13 +507,13 @@ knitr::include_graphics("images/iris-sepal-petal.jpg")
 ```
 
 
-:::{.exercise}
+:::{.practice}
 Use `?` to make youself familiar with the following commands: `str`,`summary`, `dim`, `colnames`, `names`, `nrow`, `ncol`, `head`, and `tail`.
 
 What information can you get with all these commands?
 :::
 
-:::{.exercise}
+:::{.practice}
 Write a function to compute the factorial of a non-negative integer, *x*, expressed as *x!*. The factorial of *x* refers to *x* multiplied by the product of all integers less than *x*, down to 1.
 
 For example, *3!* = 3 x 2 x 1  = 6.
