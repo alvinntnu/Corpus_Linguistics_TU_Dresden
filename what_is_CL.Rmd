@@ -131,8 +131,9 @@ showtext_auto(enable = TRUE)
 
     * Text-processing technology supports large-scale analysis.
 
-      * Retrieval and coding
-      * Regular expressions
+      * Retrieval: corpus toolkit vs. coding
+      * Corpus Query Language vs. Regular Expressions
+      
     * Common methods
 
       * KWIC concordances

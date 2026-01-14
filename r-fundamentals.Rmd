@@ -164,12 +164,13 @@ print(y)
 
 ## Data Structure
 
-In R, the most primitive object is a **vector**. There are three types of primitive vectors: (a) numeric, (b) character, and (c) Boolean vectors. In our previous examples, `x` is a numeric vector of one element; `y` is a character vector of one element. The following code shows an example of a Boolean vector `z`. 
+In R, the most primitive object is a **vector**. There are three types of primitive vectors: (a) numeric, (b) character, and (c) Boolean/Logical vectors. In our previous examples, `x` is a numeric vector of one element; `y` is a character vector of one element. The following code shows an example of a Boolean vector `z`. 
 
 
 ```{r}
 z <- TRUE
 z
+class(z)
 ```
 
 All elements in the vector have to be **of the same data type**.
@@ -198,7 +199,7 @@ print(ex_list)
 ```
 
 ```{r}
-ex_array <- matrix(c(1,5,6,3,8,19),byrow = T, nrow = 2)
+ex_array <- matrix(c(1,5,6,3,8,19),byrow = TRUE, nrow = 2)
 ex_array
 ```
 
@@ -234,7 +235,7 @@ class(print)
 To instruct R to do things more precisely, a function call usually has many `parameters` to specify. Take the earlier function `matrix()` for example. It is a pre-defined function in the R base library. 
 
 ```{r}
-ex_array <- matrix(c(1,5,6,3,8,19),byrow = T, nrow = 2)
+ex_array <- matrix(c(1,5,6,3,8,19),byrow = TRUE, nrow = 2)
 ex_array
 ```
 
@@ -440,7 +441,9 @@ The following is a list of resources where people usually get external assistanc
 knitr::include_graphics("images/panic.jpg")
 ```
 
-* Learning R resembles learning a foreign language. Progress takes time. You cannot master all vocabulary in one day. Forgetting happens often. Everyone experiences this. When a script fails, avoid frustration. Take a break. Return later. Long debugging sessions with heavy Google searching remain normal.
+* Learning R resembles learning a foreign language. Progress takes time. You cannot master all vocabulary in one day. Forgetting happens often. Everyone experiences this. When a script fails, avoid frustration. Take a break. Return later. 
+
+* Long debugging sessions with heavy Google searching remain normal.
 
 * Common problems many learners face
 
