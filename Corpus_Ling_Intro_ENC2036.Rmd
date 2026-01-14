@@ -179,8 +179,16 @@ corp_us %>%
 
 
 ```{r}
+## loading 
 gutenberg <- readtext(file = "demo_data/gutenberg.zip")
+
+## Checking
+gutenberg
+
+## Convert into corpus object
 gutenberg_corp <- corpus(gutenberg)
+
+## summary
 summary(gutenberg_corp)
 ```
 
